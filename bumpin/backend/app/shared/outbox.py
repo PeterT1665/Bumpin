@@ -27,7 +27,7 @@ router = APIRouter(tags=["outbox"])
 
 def clean_text(text: str) -> str:
     """No em dashes or en dashes in any outbound or user-facing text."""
-    return (text or "").replace(" — ", ", ").replace("—", ", ").replace("–", "-")
+    return (text or "").replace(" \u2014 ", ", ").replace("\u2014", ", ").replace("\u2013", "-")
 
 
 def _email_mode() -> str:

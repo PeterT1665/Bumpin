@@ -16,7 +16,7 @@ def client():
 
 
 def _draft(**kw):
-    facts = {"subject": "Hello — there", "body": "Body – text", "context_used": ["Sparkle"], "actor": "jess"}
+    facts = {"subject": "Hello \u2014 there", "body": "Body \u2013 text", "context_used": ["Sparkle"], "actor": "jess"}
     facts.update(kw)
     return outbox.draft_email(None, "manager@x.example.test", "test", facts)
 
@@ -27,7 +27,7 @@ def test_draft_scrubs_dashes_and_adds_policy():
     with db.get_conn() as conn:
         o = db.row(conn.execute("SELECT * FROM outbox WHERE id = ?", (oid,)))
     assert o["status"] == "draft"
-    assert "—" not in o["subject"] and "–" not in o["body"]
+    assert "\u2014" not in o["subject"] and "\u2013" not in o["body"]
     assert json.loads(o["context_used_json"]) == ["Sparkle", "email_policy.md"]
 
 

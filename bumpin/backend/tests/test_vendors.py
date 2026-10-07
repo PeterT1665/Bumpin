@@ -15,7 +15,7 @@ from backend.app.vendors import check_eligibility, extract_vendor_doc, recommend
 from backend.app.vendors.docs import parse_pages
 
 EMAILS = Path(__file__).resolve().parents[2] / "data" / "demo" / "emails"
-DASHES = ("—", "–")
+DASHES = ("\u2014", "\u2013")
 
 
 @pytest.fixture()
