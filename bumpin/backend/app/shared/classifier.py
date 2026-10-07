@@ -8,6 +8,7 @@ Otherwise confidence = mean of the two.
 from __future__ import annotations
 
 import re
+import re
 from typing import Literal
 
 from pydantic import BaseModel
@@ -72,21 +73,52 @@ def is_vague_change(text: str) -> bool:
     return bool(_HEDGE.search(text)) and not _CLOCK.search(text) and not _FIRM.search(text)
 
 
+_RIDER_WORDS = re.compile(r"\brider\b|\btech(nical)? spec|\bhospo\b|\bhospitality\b", re.I)
+_DOC_WORDS = re.compile(
+    r"certificate|permit|insurance|public liability|food safety|gas safety|compliance", re.I)
+_CHANGE_WORDS = re.compile(
+    r"cancel|flight|delayed|running behind|moving|move (?:our|the|my)|load[- ]?in|re-?scheduled?|"
+    r"stage change|pulling out|withdraw", re.I)
+_VAGUE_WORDS = re.compile(r"could we|can we|maybe|a bit|later|earlier|change|question|wondering|swap", re.I)
+_MAJOR_WORDS = re.compile(
+    r"cancel|flight|delayed|moving|move (?:our|the|my)|load[- ]?in|re-?scheduled?|stage change|"
+    r"pulling out|withdraw", re.I)
+_HAS_TIME = re.compile(r"\b\d{1,2}[:.]\d{2}\b|\b\d{1,2}\s?(?:am|pm)\b", re.I)
+
+
+def heuristic_classify(text: str) -> Classification:
+    """Keyword rules used when no LLM is available. Same output shape as classify()."""
+    has_attachment = "[attachment" in text.lower()
+    if _RIDER_WORDS.search(text):
+        label, conf, why = "rider", 0.95, "Mentions a rider or hospitality list."
+    elif has_attachment and _DOC_WORDS.search(text):
+        label, conf, why = "vendor_doc", 0.95, "Attached compliance documents."
+    elif _CHANGE_WORDS.search(text) and (_HAS_TIME.search(text) or re.search(r"cancel", text, re.I)):
+        label, conf, why = "help_or_change", 0.92, "Reports a concrete change or cancellation."
+    elif _VAGUE_WORDS.search(text):
+        label, conf, why = "help_or_change", 0.45, "Asks for a change but gives no specific time or reason."
+    elif _DOC_WORDS.search(text):
+        label, conf, why = "vendor_doc", 0.7, "Talks about compliance documents but none are attached."
+    else:
+        label, conf, why = "unsure", 0.3, "Could not tell what this email is about."
+    major = label == "help_or_change" and conf >= 0.9 and bool(_MAJOR_WORDS.search(text))
+    return Classification(
+        label=label, confidence=conf, reason=f"Keyword fallback. {why}",
+        sender_role="unknown", entity_hint=None, is_major_change=major,
+    )
+
+
 def classify(text: str) -> Classification:
     """Classify an email using two independent LLM calls for agreement checking."""
     prompt_a = _CLASSIFY_PROMPT.format(text=text)
     prompt_b = "SECOND INDEPENDENT PASS. " + prompt_a
 
-    result_a = complete_json(
-        prompt_a,
-        _SingleClassification,
-        cache_key=None,
-    )
-    result_b = complete_json(
-        prompt_b,
-        _SingleClassification,
-        cache_key=None,
-    )
+    try:
+        result_a = complete_json(prompt_a, _SingleClassification, cache_key=None)
+        result_b = complete_json(prompt_b, _SingleClassification, cache_key=None)
+    except Exception:
+        # No provider key, or the reply did not validate. Fall back to keyword rules.
+        return heuristic_classify(text)
 
     # Agreement check
     if result_a.label != result_b.label:
