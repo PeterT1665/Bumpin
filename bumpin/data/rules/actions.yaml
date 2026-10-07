@@ -1,0 +1,30 @@
+# Recommended actions per finding kind
+# Each entry lists the recommended action text for the UI
+
+shortage:
+  action: "Ask the artist manager to accept the available quantity or arrange an external rental."
+  severity: conflict
+
+double_booking:
+  action: "Contact both artists' managers to negotiate alternate set times or equipment sharing."
+  severity: conflict
+
+over_budget:
+  action: "Review the hospitality request with the artist manager and agree on reductions."
+  severity: warning
+
+expired_cert:
+  action: "Notify the vendor that their certificate does not cover the festival period and request an updated document."
+  severity: conflict
+
+missing_doc:
+  action: "Request the missing document from the vendor before approving their application."
+  severity: conflict
+
+low_confidence:
+  action: "Review this item manually. The classifier was not confident enough to file it automatically."
+  severity: warning
+
+schedule_change:
+  action: "Review the proposed schedule change. If approved, update the load-in or set time and notify affected parties."
+  severity: warning

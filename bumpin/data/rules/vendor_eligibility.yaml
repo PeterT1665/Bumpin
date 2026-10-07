@@ -1,0 +1,45 @@
+# Vendor Eligibility Rules
+# Each vendor type lists required document kinds, whether gas applies,
+# and the minimum insurance cover.
+# Expiry: every document must be valid through the festival end date (2026-12-13).
+
+food:
+  required_docs:
+    - food_safety
+    - insurance
+    - permit
+  gas_requires:
+    - gas
+  minimum_insurance_cover: 10000000
+  notes: "Food vendors must have a current food safety certificate, public liability insurance, and a council permit. Vendors using gas also need a gas compliance certificate."
+
+beverage:
+  required_docs:
+    - insurance
+    - permit
+  gas_requires:
+    - gas
+  minimum_insurance_cover: 10000000
+  notes: "Beverage vendors must have public liability insurance and a council permit. Vendors using gas also need a gas compliance certificate."
+
+merch:
+  required_docs:
+    - insurance
+  gas_requires: []
+  minimum_insurance_cover: 5000000
+  notes: "Merch vendors must have public liability insurance."
+
+other:
+  required_docs:
+    - insurance
+    - permit
+  gas_requires:
+    - gas
+  minimum_insurance_cover: 10000000
+  notes: "Other vendors must have insurance and a permit. Vendors using gas also need a gas compliance certificate."
+
+# General rules
+general:
+  festival_end_date: "2026-12-13"
+  expiry_rule: "All documents must have an expiry date on or after the festival end date."
+  gas_rule: "Any vendor with uses_gas=true must have a current gas compliance certificate."

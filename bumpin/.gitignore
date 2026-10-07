@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+data/llm_cache/*.json
+*.egg-info/
+dist/
+build/
+.pytest_cache/
