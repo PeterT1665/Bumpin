@@ -93,3 +93,9 @@ class TestExtractText:
         result = extract_text(str(img_file))
         assert len(result) == 1
         assert "fake extracted text" in result[0].text
+
+
+def test_code_fences_are_stripped():
+    register_fake_response("fenced", '```json\n{"name": "a", "value": 2}\n```')
+    result = complete_json("fenced prompt", SimpleModel)
+    assert result.name == "a" and result.value == 2

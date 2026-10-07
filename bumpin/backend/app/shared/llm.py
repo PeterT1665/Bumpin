@@ -85,8 +85,9 @@ def _anthropic_complete(prompt: str, schema: type[T]) -> str:
 
     client = anthropic.Anthropic(api_key=_API_KEY)
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model=os.getenv("LLM_MODEL", "claude-sonnet-5-5"),
         max_tokens=4096,
+        system="Respond with a single valid JSON object only. No prose, no markdown, no code fences.",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
     )
@@ -137,6 +138,18 @@ class PageText(BaseModel):
     text: str
 
 
+def _strip_fences(raw: str) -> str:
+    """Remove a surrounding ``` or ```json code fence, if any."""
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("
+", 1)[1] if "
+" in text else text[3:]
+        if text.rstrip().endswith("```"):
+            text = text.rstrip()[:-3]
+    return text.strip()
+
+
 def complete_json(
     prompt: str,
     schema: type[T],
@@ -160,7 +173,7 @@ def complete_json(
     raw = provider_fn(prompt, schema)  # type: ignore[operator]
 
     # Parse and re-serialize to ensure valid JSON before caching
-    parsed = json.loads(raw)
+    parsed = json.loads(_strip_fences(raw))
     clean = json.dumps(parsed)
     _write_cache(key, clean)
 
