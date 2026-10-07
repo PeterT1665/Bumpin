@@ -1,7 +1,7 @@
 """Provider-agnostic LLM client with disk caching.
 
 Reads LLM_PROVIDER and LLM_API_KEY from .env.
-Supports: openai, anthropic, fake (for tests).
+Supports: openai, groq, anthropic, fake (for tests).
 Caches responses to data/llm_cache/ keyed by prompt hash when LLM_CACHE=on.
 """
 
@@ -66,6 +66,20 @@ def _openai_complete(prompt: str, schema: type[T]) -> str:
     return response.choices[0].message.content or "{}"
 
 
+def _groq_complete(prompt: str, schema: type[T]) -> str:
+    """Groq is OpenAI-compatible. JSON mode needs the word JSON in the prompt."""
+    import openai
+
+    client = openai.OpenAI(api_key=_API_KEY, base_url="https://api.groq.com/openai/v1")
+    response = client.chat.completions.create(
+        model=os.getenv("LLM_MODEL", "openai/gpt-oss-120b"),
+        messages=[{"role": "user", "content": prompt + "\n\nRespond with JSON only."}],
+        response_format={"type": "json_object"},
+        temperature=0.2,
+    )
+    return response.choices[0].message.content or "{}"
+
+
 def _anthropic_complete(prompt: str, schema: type[T]) -> str:
     import anthropic
 
@@ -82,6 +96,7 @@ def _anthropic_complete(prompt: str, schema: type[T]) -> str:
 
 _PROVIDERS: dict[str, object] = {
     "openai": _openai_complete,
+    "groq": _groq_complete,
     "anthropic": _anthropic_complete,
     "fake": lambda prompt, schema=None: _fake_complete(prompt),
 }
