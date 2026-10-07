@@ -293,3 +293,17 @@ def test_fifteen_sets_a_day_and_applied_artists_have_no_slot():
     with TestClient(app) as client:
         applied = [a for a in client.get("/api/artists").json() if a["status"] == "applied"]
     assert len(applied) == 15 and all(a["set_start"] is None and a["stage_id"] is None for a in applied)
+
+
+def test_vague_request_goes_to_review_without_proposed_slot():
+    eid = receive("priya@halcyon-music.example.test", "Could we maybe go on a bit later? Cheers.",
+                  subject="Set time")
+    tid = ripple.create_help_ticket(eid, SimpleNamespace(confidence=0.5, entity_hint="Halcyon",
+                                                         is_major_change=True, label="help_or_change"))
+    with db.get_conn() as conn:
+        t = db.row(conn.execute("SELECT status, proposed_actions_json, summary FROM tickets WHERE id = ?", (tid,)))
+        start = conn.execute("SELECT set_start FROM artists WHERE id = ?", (HALCYON,)).fetchone()[0]
+    assert t["status"] == "needs_review" and t["proposed_actions_json"] is None
+    assert "unclear" in t["summary"] and start == "2026-12-12T18:00:00"
+    assert [f["kind"] for f in findings(tid)] == ["low_confidence"]
+    assert outbox() == []

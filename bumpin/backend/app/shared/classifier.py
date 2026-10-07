@@ -7,6 +7,7 @@ Otherwise confidence = mean of the two.
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from pydantic import BaseModel
@@ -57,6 +58,20 @@ Email text:
 ---"""
 
 
+# A change request with hedging words and no concrete time or firm event is too vague to
+# act on, whatever the model says about its own confidence. Plain code, not an LLM guess.
+VAGUE_CONFIDENCE_CAP = 0.5
+_HEDGE = re.compile(
+    r"\b(maybe|perhaps|possibly|a bit|a little|wondering|any flexibility|could we|can we|"
+    r"would it be possible|at some point|sometime)\b", re.I)
+_CLOCK = re.compile(r"\b\d{1,2}[:.]\d{2}\b|\b\d{1,2}\s?(?:am|pm)\b|\b(?:noon|midnight)\b", re.I)
+_FIRM = re.compile(r"\b(cancel\w*|withdraw\w*|delayed|stranded|unable to|cannot make|can't make)\b", re.I)
+
+
+def is_vague_change(text: str) -> bool:
+    return bool(_HEDGE.search(text)) and not _CLOCK.search(text) and not _FIRM.search(text)
+
+
 def classify(text: str) -> Classification:
     """Classify an email using two independent LLM calls for agreement checking."""
     prompt_a = _CLASSIFY_PROMPT.format(text=text)
@@ -98,6 +113,10 @@ def classify(text: str) -> Classification:
     sender_role = result_a.sender_role
     if sender_role == "unknown":
         sender_role = result_b.sender_role
+
+    if label == "help_or_change" and is_vague_change(text) and confidence > VAGUE_CONFIDENCE_CAP:
+        confidence = VAGUE_CONFIDENCE_CAP
+        reason = f"Vague change request with no concrete time, needs a human. {reason}"
 
     return Classification(
         label=label,

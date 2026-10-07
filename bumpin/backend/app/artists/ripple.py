@@ -16,6 +16,7 @@ from backend.app.artists.models import ProposedAction
 from backend.app.artists.tickets import _unmatched_ticket, find_artist
 
 CHANGEOVER = timedelta(minutes=15)
+REVIEW_CONFIDENCE = 0.60  # below this the request is too unclear to propose a new slot
 CREW_EMAIL = "{slug}-crew@fieldday.example.test"
 CATERING_EMAIL = "catering@fieldday.example.test"
 
@@ -138,6 +139,9 @@ def create_help_ticket(email_id: int, classification) -> int:
     if artist is None:
         return _unmatched_ticket(email, "help", "Change request received but the artist could not be identified.")
 
+    if getattr(classification, "confidence", 1.0) < REVIEW_CONFIDENCE or getattr(classification, "label", "") == "unsure":
+        return _review_ticket(email, artist, classification)
+
     text = f"{email.get('body') or ''}\n\nSubject: {email.get('subject') or ''}"
     change = ai.parse_change(text)
     actions = ripple_for_change(artist["id"], change)
@@ -165,6 +169,30 @@ def create_help_ticket(email_id: int, classification) -> int:
         conn.execute("UPDATE emails SET ticket_id = ?, is_major_change = ? WHERE id = ?",
                      (tid, int(major), email_id))
         audit(conn, tid, "system", "ticket_created", {"type": "help", "change": change.kind})
+    return tid
+
+
+def _review_ticket(email: dict, artist: dict, classification) -> int:
+    """Unclear request: no slot is proposed, Ravi decides what to ask the artist."""
+    conf = getattr(classification, "confidence", 0.0)
+    snippet = " ".join((email.get("body") or "").split())[:200]
+    with db.get_conn() as conn:
+        cur = conn.execute(
+            """INSERT INTO tickets (type, owner_type, owner_id, status, severity, summary, created_at, updated_at)
+               VALUES ('help', 'artist', ?, 'needs_review', 'warning', ?, ?, ?)""",
+            (artist["id"], f"{artist['name']}: unclear request, needs a human (confidence {conf:.2f}).",
+             now(), now()),
+        )
+        tid = int(cur.lastrowid)
+        conn.execute(
+            """INSERT INTO findings (ticket_id, kind, severity, message, suggestion, quote, status)
+               VALUES (?, 'low_confidence', 'warning', ?, ?, ?, 'open')""",
+            (tid, f"{artist['name']}'s team asked about their set, but did not say when or why. "
+                  f"BumpIn is not sure what they want, so no new slot is proposed.",
+             "Reply and ask for a specific time, or ignore if it is not a real request.", snippet),
+        )
+        conn.execute("UPDATE emails SET ticket_id = ? WHERE id = ?", (tid, email["id"]))
+        audit(conn, tid, "system", "ticket_created", {"type": "help", "low_confidence": conf})
     return tid
 
 

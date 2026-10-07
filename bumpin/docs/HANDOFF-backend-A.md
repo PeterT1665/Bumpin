@@ -75,6 +75,11 @@ artists.create_help_ticket(email_id, classification)    # help_or_change from an
 6. **Vendor `site_zone`.** The catering notice goes to food and beverage vendors whose `site_zone` contains the stage's first word (for example "River Lawn Food Court" matches River Stage). With none, it goes to `catering@fieldday.example.test`.
 7. **Halcyon's ticket exists after reset.** After every reset, Halcyon's rider is on file and approved by `jess`, so the shared Moog is reserved. That is why Neon Tide's rider triggers problem 2. Problem 7 (Halcyon asking to go later) will find this artist.
 
+## Problem 7 (vague email)
+
+- `classifier.py` now caps confidence at 0.5 for a `help_or_change` email that has hedging words ("maybe", "could we", "a bit", ...) and no clock time or firm event (cancelled, stranded, ...). Plain code, with tests in `test_classifier_vague.py`. On Groq the Halcyon email scored 0.95 before the cap and 0.5 after.
+- `artists.create_help_ticket` (mine) already handles low confidence: if `classification.confidence < 0.60` or the label is `unsure`, it creates a `needs_review` help ticket with a `low_confidence` finding and **no proposed slot**. Your inbox router should still route confidence below 0.60 or `unsure` to your own needs_review ticket path, but if it calls mine, it is safe.
+
 ## Data formats the frontend sees
 
 - `findings.bbox_json`: `{"page": 2, "page_size": [595.3, 841.9], "rects": [[x0, y0, x1, y1]], "facts": {...}}`. Points, origin top-left. Findings without a box may still have `{"facts": {...}}`.
