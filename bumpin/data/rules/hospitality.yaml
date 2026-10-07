@@ -1,0 +1,51 @@
+# Hospitality caps and unit costs (AUD). Owner: Backend A.
+# An artist's own hospitality_cap overrides default_cap.
+# Items are matched by alias against the rider line, longest alias first.
+
+default_cap: 1000
+
+items:
+  dressing_room:
+    label: Private dressing room
+    unit_cost: 350
+    aliases: [dressing room, green room, private room]
+  premium_beer:
+    label: Premium beer
+    unit_cost: 9
+    aliases: [premium beer, craft beer, beers, beer]
+  champagne:
+    label: Bottle of champagne
+    unit_cost: 140
+    aliases: [champagne, prosecco, sparkling wine]
+  sushi_platter:
+    label: Sushi platter
+    unit_cost: 220
+    aliases: [sushi platter, sushi]
+  cheese_platter:
+    label: Cheese platter
+    unit_cost: 120
+    aliases: [cheese platter, cheese board]
+  fruit_platter:
+    label: Fruit platter
+    unit_cost: 60
+    aliases: [fruit platter, fruit]
+  sparkling_water:
+    label: Sparkling water
+    unit_cost: 4
+    aliases: [sparkling water, mineral water]
+  bottled_water:
+    label: Bottled water
+    unit_cost: 2
+    aliases: [bottled water, still water, water]
+  towels:
+    label: Towel
+    unit_cost: 5
+    aliases: [towels, towel]
+  flowers:
+    label: Fresh flowers
+    unit_cost: 85
+    aliases: [fresh flowers, flowers]
+  hot_meal:
+    label: Hot meal
+    unit_cost: 35
+    aliases: [hot meals, hot meal, meals, dinner]

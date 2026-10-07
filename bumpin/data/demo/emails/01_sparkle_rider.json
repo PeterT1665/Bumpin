@@ -1,0 +1,8 @@
+{
+  "from": "sam@sparkle-mgmt.example.test",
+  "subject": "Sparkle rider for Riverside",
+  "body": "Hi Riverside team,\n\nPlease find attached Sparkle's technical and hospitality rider for the River Stage set on Friday.\n\nThanks,\nSam Ortiz\nSparkle Management",
+  "attachments": [
+    "data/docs/riders/sparkle_rider.pdf"
+  ]
+}

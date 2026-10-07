@@ -1,0 +1,8 @@
+{
+  "from": "ada@marlowlanes.example.test",
+  "subject": "Marlow & The Lanes: updated rider",
+  "body": "Hello,\n\nAttached is the updated rider for Marlow & The Lanes for Sunday on the Lawn Stage. Hospitality has a few additions this time.\n\nBest,\nAda Brooks",
+  "attachments": [
+    "data/docs/riders/marlow_lanes_rider.pdf"
+  ]
+}
