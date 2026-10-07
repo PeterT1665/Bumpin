@@ -8,7 +8,7 @@ Needs Python 3.11 or newer. From this `bumpin/` folder:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt openpyxl
+.venv/bin/pip install -r requirements.txt
 cp .env.example .env            # leave LLM_PROVIDER blank to use the fake provider
 .venv/bin/uvicorn backend.app.main:app --reload
 ```

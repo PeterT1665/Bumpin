@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -106,6 +106,11 @@ def _to_sql(value):
     return value
 
 
+# Functions run after every reset, for demo state that needs code (e.g. a rider
+# already on file). Register with POST_RESET_HOOKS.append(fn).
+POST_RESET_HOOKS: list[Callable[[], None]] = []
+
+
 def reset() -> dict[str, int]:
     """Drop, recreate and reseed the database, then set sim_today."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -114,6 +119,8 @@ def reset() -> dict[str, int]:
         init_schema(conn)
         counts = load_seed(conn)
         conn.execute("UPDATE festival SET sim_today = ?", (SIM_TODAY,))
+    for hook in POST_RESET_HOOKS:
+        hook()
     return counts
 
 
