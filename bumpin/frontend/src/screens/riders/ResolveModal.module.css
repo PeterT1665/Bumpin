@@ -8,11 +8,13 @@
   position: fixed;
   top: var(--window-inset);
   right: var(--window-inset);
-  bottom: var(--window-inset);
+  /* Down to the screen edge: the page scrolls behind the modal, so stopping at the
+     window inset left an undimmed strip of content along the bottom. */
+  bottom: 0;
   left: calc(var(--window-inset) + var(--rail-w));
   background: var(--ink-900);
   opacity: .4;
-  border-radius: 0 var(--r-window) var(--r-window) 0;
+  border-radius: 0 var(--r-window) 0 0;
   z-index: 10;
 }
 

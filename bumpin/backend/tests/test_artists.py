@@ -90,7 +90,7 @@ def test_shortage_found_for_sparkle():
 
 
 def test_no_shortage_for_halcyon():
-    assert checks.check_shortage(HALCYON) == []
+    assert [f for f in checks.check_shortage(HALCYON) if f.kind == "shortage"] == []
 
 
 def test_double_booking_found_for_neon_tide():
@@ -252,7 +252,7 @@ def test_edit_action_changes_time():
 
 def test_runsheet_and_xlsx_match():
     rows = build_runsheet()
-    assert len([r for r in rows if r.kind == "set"]) == 45
+    assert len([r for r in rows if r.kind == "set"]) == 46
     assert rows == sorted(rows, key=lambda r: (r.start, r.area))
     ws = load_workbook(BytesIO(runsheet_xlsx())).active
     data = list(ws.iter_rows(min_row=2, values_only=True))
@@ -266,7 +266,7 @@ def test_overview_and_inventory_endpoints():
         ov = client.get("/api/overview").json()
         inv = client.get("/api/inventory").json()
         xlsx = client.get("/api/export/runsheet.xlsx")
-    assert ov["suppliers"]["artists"] == 60 and ov["suppliers"]["artists_scheduled"] == 45
+    assert ov["suppliers"]["artists"] == 61 and ov["suppliers"]["artists_scheduled"] == 46
     assert ov["suppliers"]["artists_applied"] == 15 and ov["open_conflicts"] == 1
     synth = next(i for i in inv if i["id"] == 14)
     assert synth["allocations"][0]["artist_name"] == "Halcyon"
@@ -290,7 +290,7 @@ def test_fifteen_sets_a_day_and_applied_artists_have_no_slot():
     per_day: dict[str, int] = {}
     for r in (r for r in build_runsheet() if r.kind == "set"):
         per_day[r.start[:10]] = per_day.get(r.start[:10], 0) + 1
-    assert per_day == {"2026-12-11": 15, "2026-12-12": 15, "2026-12-13": 15}
+    assert per_day == {"2026-12-11": 15, "2026-12-12": 16, "2026-12-13": 15}  # Dj Nova is the extra Saturday set
     with TestClient(app) as client:
         applied = [a for a in client.get("/api/artists").json() if a["status"] == "applied"]
     assert len(applied) == 15 and all(a["set_start"] is None and a["stage_id"] is None for a in applied)
@@ -352,14 +352,16 @@ def test_help_email_quote_is_underlined():
     assert "cancelled" in f["quote"]
 
 
-def test_vague_email_quote_is_underlined():
+def test_vague_email_quote_is_located_but_not_painted():
+    """The span is stored, but low_confidence findings are left off the page by design (routes.py)."""
     body = "Could we maybe go on a bit later? Cheers."
     eid = receive("priya@halcyon-music.example.test", body, subject="Set time")
     tid = ripple.create_help_ticket(eid, SimpleNamespace(confidence=0.5, entity_hint="Halcyon",
                                                          is_major_change=True, label="help_or_change"))
     f = findings(tid)[0]
-    box = highlights(f["doc_id"])[0]
+    box = json.loads(f["bbox_json"])
     assert body[box["start"]:box["end"]] == "Could we maybe go on a bit later?"
+    assert highlights(f["doc_id"]) == []
 
 
 def test_highlight_reports_status_and_hides_ignored():

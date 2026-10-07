@@ -629,9 +629,11 @@
   position: fixed;
   top: var(--window-inset);
   right: var(--window-inset);
-  bottom: var(--window-inset);
+  /* Down to the screen edge, like the rider modal: the page scrolls behind the
+     modal, so stopping at the inset left an undimmed strip along the bottom. */
+  bottom: 0;
   left: calc(var(--window-inset) + var(--rail-w));
-  border-radius: 0 var(--r-window) var(--r-window) 0;
+  border-radius: 0 var(--r-window) 0 0;
   z-index: 40;
   display: grid;
   place-items: center;
