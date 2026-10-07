@@ -142,9 +142,7 @@ def _strip_fences(raw: str) -> str:
     """Remove a surrounding ``` or ```json code fence, if any."""
     text = raw.strip()
     if text.startswith("```"):
-        text = text.split("
-", 1)[1] if "
-" in text else text[3:]
+        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
         if text.rstrip().endswith("```"):
             text = text.rstrip()[:-3]
     return text.strip()
