@@ -245,6 +245,11 @@ def approve_action(ticket_id: int, index: int, actor: str) -> int:
                                       _hhmm(action.new_start), _hhmm(action.new_end), actor, reason)
     else:
         catering = "catering" in action.title.lower()
+        if catering:
+            # Recipients are recomputed now, so a vendor rejected since the proposal is skipped.
+            with db.get_conn() as conn:
+                action.to_addr = ", ".join(c["contact_email"] for c in _caterers_near(conn, artist["stage_name"])) \
+                    or CATERING_EMAIL
         outbox_id = emails.crew_notice(
             ticket_id, action.to_addr, "team" if catering else "crew", artist["stage_name"],
             action.detail.split("; "), actor, [artist["name"]],

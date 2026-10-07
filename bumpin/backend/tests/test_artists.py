@@ -368,3 +368,16 @@ def test_highlight_reports_status_and_hides_ignored():
     assert highlights(f["doc_id"])[0]["status"] == "open"
     tickets.ignore_finding(tid, f["id"], "ravi")
     assert highlights(f["doc_id"]) == []
+
+
+def test_catering_notice_skips_vendor_rejected_after_proposal():
+    with db.get_conn() as conn:
+        conn.execute("""INSERT INTO vendors (id, name, type, contact_email, site_zone, status)
+                        VALUES (901, 'Rejected Tacos', 'food', 'tacos@vendor.example.test', 'River Food Court', 'in_progress'),
+                               (902, 'Open Pies', 'food', 'pies@vendor.example.test', 'River Food Court', 'in_progress')""")
+    tid = nova_ticket()
+    with db.get_conn() as conn:
+        conn.execute("UPDATE vendors SET status = 'rejected' WHERE id = 901")
+    ripple.approve_action(tid, 3, "ravi")
+    to = outbox()[-1]["to_addr"]
+    assert "pies@vendor.example.test" in to and "tacos@vendor.example.test" not in to
