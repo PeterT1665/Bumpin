@@ -32,23 +32,40 @@ export function FindingCard({ finding, active, onResolve, onIgnore, onAcknowledg
   const tone = HIGHLIGHT_TONE[finding.severity]
   const isConflict = finding.severity === 'conflict'
 
+  /* A finding that has been decided keeps its card — the highlight is still on
+     the page and still clickable, so clicking it has to say something. What it
+     says is what happened, with no buttons: Resolve on an already-resolved
+     finding is refused by the backend, and offering it would be offering a
+     dead end. */
+  const settled = finding.status !== 'open'
+
   return (
     <section className={`${s.shell} ${active ? s.shellActive : ''}`}>
       <div className={s.finding}>
         <div className={s.head}>
           <span className={`${s.headLabel} t-label-md`}>
-            {isConflict ? 'Bumpin suggests' : 'Bumpin flags this'}
+            {settled
+              ? (finding.status === 'resolved' ? 'Bumpin resolved this' : 'Set aside')
+              : isConflict ? 'Bumpin suggests' : 'Bumpin flags this'}
           </span>
           <span className={`${s.tag} ${s[`tag_${tone}`]} t-caption`}>{kindLabel(finding.kind)}</span>
         </div>
-        <p className={`${s.findingBody} t-body-sm`}>{finding.suggestion || finding.message}</p>
+        <p className={`${s.findingBody} t-body-sm`}>
+          {settled ? finding.message : finding.suggestion || finding.message}
+        </p>
         {error && (
           <div className={s.errorSlot}>
             <p className={`${s.error} t-caption`} role="alert">{error}</p>
           </div>
         )}
         <div className={s.findingFoot}>
-          {isConflict ? (
+          {settled ? (
+            <p className={`${s.decided} t-caption`}>
+              {finding.status === 'resolved'
+                ? 'Resolved. The reply is in the outbox.'
+                : 'Noted and left as it is.'}
+            </p>
+          ) : isConflict ? (
             <>
               {/* 121:7 is 104 wide, 121:9 is 92 — both hand-set in the mock. */}
               <Button variant="filled" onClick={onResolve} disabled={busy} style={{ minWidth: 104 }}>

@@ -617,10 +617,21 @@
 
 /* ================================================================== MODAL */
 
-/* 204:333 Scrim — covers the canvas (not the rail), #1a1614 @ 0.4 */
+/* 204:333 Scrim — covers the canvas (not the rail), #1a1614 @ 0.4.
+   Inset to the app window, the way the rider panel's scrim (204:177) already
+   is. `inset: 0 0 0 var(--rail-w)` ran it to the edges of the browser instead,
+   so the dim spilled outside the rounded frame, over the page background and
+   past the top and bottom of the app — which reads as the panel casting a
+   shadow across the whole screen rather than dimming the canvas behind it. It
+   also let the panel itself grow taller than the window, because `max-height:
+   100%` resolves against this box. */
 .scrim {
   position: fixed;
-  inset: 0 0 0 var(--rail-w);
+  top: var(--window-inset);
+  right: var(--window-inset);
+  bottom: var(--window-inset);
+  left: calc(var(--window-inset) + var(--rail-w));
+  border-radius: 0 var(--r-window) var(--r-window) 0;
   z-index: 40;
   display: grid;
   place-items: center;

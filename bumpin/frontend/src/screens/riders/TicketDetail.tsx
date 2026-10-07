@@ -121,20 +121,25 @@ export function TicketDetail() {
   }, [doc?.id, highlights])
   const text = useDocumentText(doc?.id ?? null, kind)
 
-  /* Default the selection to the first open conflict, then any open finding. */
+  /* Every finding can be selected, decided ones included: their highlights are
+     still drawn and still clickable, so clicking one has to put its card up.
+     The DEFAULT still prefers an open conflict — that is the work outstanding,
+     and landing on a finished one would hide it. */
+  const findings = ticket?.findings ?? []
   const openFindings = useMemo(
-    () => (ticket?.findings ?? []).filter((f) => f.status === 'open'),
+    () => findings.filter((f) => f.status === 'open'),
     [ticket],
   )
   useEffect(() => {
-    if (selected !== null && openFindings.some((f) => f.id === selected)) return
-    const first = openFindings.find((f) => f.severity === 'conflict') ?? openFindings[0]
+    if (selected !== null && findings.some((f) => f.id === selected)) return
+    const first = openFindings.find((f) => f.severity === 'conflict')
+      ?? openFindings[0] ?? findings[0]
     if (first) setSelected(first.id)
     else if (selected !== null) setSelected(null)
   }, [openFindings, selected])
 
   const selectedFinding: Finding | null =
-    openFindings.find((f) => f.id === selected) ?? null
+    findings.find((f) => f.id === selected) ?? null
 
   /* "If a finding has no box, show the quote as text instead." */
 

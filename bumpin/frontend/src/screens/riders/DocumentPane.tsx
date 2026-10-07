@@ -238,8 +238,10 @@ export function DocumentPane({
     return () => ro.disconnect()
   }, [openId])
 
-  /* A settled highlight is a mark on the page, not a control: it opens no
-     card, takes no focus and does not deepen under the pointer. */
+  /* Only decides how a highlight is PAINTED. A settled one is drawn faint, but
+     it stays a control: making it inert meant that resolving a conflict left a
+     grey smudge on the page that could not be clicked, read or undone, which
+     looks like the app breaking rather than like the work being done. */
   const isOpen = useCallback(
     (findingId: number) => open.some((h) => h.finding_id === findingId), [open])
 
@@ -268,7 +270,7 @@ export function DocumentPane({
      counting it here would leave the card neither anchored nor dropped into
      the flow, which is to say invisible. Without it, that finding falls back
      to `anchorFlow` and stays reachable. */
-  const canAnchor = open.filter(isBox).length + spans.length > 0
+  const canAnchor = highlights.filter(isBox).length + spans.length > 0
 
   /* Chrome's built-in PDF viewer insets the page by about four pixels on every
      side and anchors it to the TOP of whatever box it is given. A frame cut to
@@ -330,10 +332,10 @@ export function DocumentPane({
                     const live = isOpen(h.finding_id)
                     return (
                       <button key={`${h.finding_id}-${x1}-${y1}`} type="button"
-                              ref={(el) => register(h.finding_id, live ? el : null)}
+                              ref={(el) => register(h.finding_id, el)}
                               className={`${s.box} ${s[`box_${tone}`]} ${live ? '' : s.boxCleared} ${pinClass(h.finding_id)}`}
                               aria-label={`Finding ${h.finding_id}, ${h.severity}`}
-                              {...(live ? handlers(h.finding_id) : { tabIndex: -1, 'aria-hidden': true })}
+                              {...handlers(h.finding_id)}
                               style={{
                                 left: `calc(${(x1 / w) * 100}% - ${PAD_X}px)`,
                                 top: `calc(${(y1 / ht) * 100}% - ${PAD_Y}px)`,
@@ -462,16 +464,12 @@ function TextDocument({ text, spans, isOpen, handlers, pinClass, register }: {
     const live = isOpen(h.finding_id)
     parts.push(
       <span key={`${h.finding_id}-${h.start}`}
-            ref={(el) => register(h.finding_id, live ? el : null)}
+            ref={(el) => register(h.finding_id, el)}
             className={`${s.mark} ${s[`mark_${HIGHLIGHT_TONE[h.severity]}`]} ${live ? '' : s.boxCleared} ${pinClass(h.finding_id)}`}
-            {...(live
-              ? {
-                  tabIndex: 0, role: 'button' as const,
-                  'aria-label': `Finding ${h.finding_id}, ${h.severity}`,
-                  onKeyDown: activate(() => handlers(h.finding_id).onClick()),
-                  ...handlers(h.finding_id),
-                }
-              : { 'aria-hidden': true })}>
+            tabIndex={0} role="button"
+            aria-label={`Finding ${h.finding_id}, ${h.severity}`}
+            onKeyDown={activate(() => handlers(h.finding_id).onClick())}
+            {...handlers(h.finding_id)}>
         {text.slice(h.start, end)}
       </span>,
     )

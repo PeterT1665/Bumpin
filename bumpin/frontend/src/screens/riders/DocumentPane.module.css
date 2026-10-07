@@ -116,11 +116,12 @@
   content: ''; position: absolute; left: 0; right: 0; top: 100%;
   height: 2px; border-radius: 1px; background: currentColor;
 }
-/* Settled: still legibly a highlight, just no longer live. At a third of the
-   tint it read as gone rather than as dealt with, which is the complaint this
-   whole behaviour was meant to fix — so it keeps most of its colour and keeps
-   its bar, in neutral ink rather than the accent. Inert either way. */
-.boxCleared { opacity: .55; pointer-events: none; }
+/* Settled: still legibly a highlight, just no longer live. Faint and with its
+   bar in neutral ink rather than the accent — but still a control. It was
+   `pointer-events: none` for one revision, and resolving a conflict then left
+   a grey smudge that could not be clicked, read or asked about: the page
+   looked broken rather than finished. */
+.boxCleared { opacity: .55; }
 .boxCleared::after { background: var(--ink-300); }
 .boxCleared.mark { border-bottom-color: var(--ink-300); }
 
