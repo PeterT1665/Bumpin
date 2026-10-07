@@ -85,3 +85,23 @@ def test_missing_attachment_is_400(client):
     r = client.post("/api/inbox/receive", json={"from": "a@b.test", "subject": "s", "body": "b",
                                                 "attachments": ["data/docs/nope.pdf"]})
     assert r.status_code == 400
+
+
+def test_low_confidence_major_change_is_review_not_major(client, monkeypatch):
+    """The live model flags the vague Halcyon email as a major change. Below 0.60 it must not alert Ravi."""
+    from backend.app.shared import inbox
+    from backend.app.shared.classifier import Classification
+
+    monkeypatch.setattr(inbox, "classify", lambda text: Classification(
+        label="help_or_change", confidence=0.5, reason="Vague", sender_role="artist",
+        entity_hint="Halcyon", is_major_change=True))
+    msg = {"from": "priya@halcyon-music.example.test", "subject": "Set time",
+           "body": "Could we maybe go on a bit later?", "attachments": []}
+    r = client.post("/api/inbox/receive", json=msg).json()
+    assert r["is_major_change"] is False and r["notified_ravi"] is False
+    assert r["confidence_band"] == "review_top"
+    assert client.get("/api/notifications?user=ravi").json() == []
+    card = next(c for c in client.get("/api/phone/cards?user=ravi").json() if c["ticket_id"] == r["ticket_id"])
+    assert card["reason"] == "needs_review" and card["urgency"] == "high"
+    with db.get_conn() as conn:
+        assert conn.execute("SELECT is_major_change FROM emails WHERE id = ?", (r["email_id"],)).fetchone()[0] == 0

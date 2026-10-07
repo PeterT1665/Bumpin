@@ -171,6 +171,8 @@ def receive(msg: InboundEmail) -> dict:
     with db.get_conn() as conn:
         flagged = conn.execute("SELECT is_major_change FROM emails WHERE id = ?", (email_id,)).fetchone()[0]
         major = bool(cls.is_major_change or flagged)  # a ticket creator may also flag a major change
+        # A change we are not sure about is a review item, not a confirmed major change.
+        major = major and cls.confidence >= TOP_OF_LIST
         conn.execute("UPDATE emails SET ticket_id = ?, classification = ?, confidence = ?, is_major_change = ? "
                      "WHERE id = ?", (ticket_id, cls.label, cls.confidence, int(major), email_id))
         ticket = db.row(conn.execute("SELECT * FROM tickets WHERE id = ?", (ticket_id,)))
