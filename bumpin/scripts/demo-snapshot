@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Freeze the CURRENT database as the state demo-reset returns to.
+#
+#   ./scripts/demo-snapshot
+#
+# Only run this when the app is in the state you want every rehearsal to start
+# from. It overwrites the baseline, so running it after a click has moved
+# something bakes that in and demo-reset will never undo it again.
+#
+# Why a snapshot at all, rather than re-running the seed: the demo state is not
+# reproducible from data/seed. It is the seed plus six scripts in order, plus
+# hand-written rows (Dj Nova's findings and boxes, the Dome Stage CDJ-3000s,
+# Harbour Coffee Co's three proposed actions). A snapshot captures all of it;
+# a replay would lose the hand-written half.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+sqlite3 data/bumpin.db ".backup data/demo_baseline.db"
+sqlite3 data/demo_baseline.db "PRAGMA integrity_check;" | grep -qx ok \
+  || { echo "The snapshot did not verify. Baseline NOT trustworthy." >&2; exit 1; }
+echo "Baseline captured from the current database."

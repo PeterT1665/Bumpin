@@ -53,3 +53,25 @@ def load_in_confirmation(ticket_id: int, vendor: dict, old_start: str, new_start
         "context_used": [vendor["name"], "load-in schedule", "email_policy.md"],
         "actor": actor,
     })
+
+
+def load_in_notice(ticket_id: int, to_addr: str, audience: str, zone: str, lines: list[str],
+                   actor: str, context: list[str]) -> int:
+    """Tell someone other than the vendor that a load-in moved.
+
+    A moved load-in has consequences the vendor never sees: the gate has to be
+    crewed earlier, the stall next door arrives into a different yard. Those are
+    separate approvable steps, so each one gets its own draft rather than being
+    folded into the vendor's confirmation.
+    """
+    body = (
+        f"Hi {audience},\n\nThere is a change to the Friday load-in at {zone}:\n\n"
+        + "\n".join(f"- {line}" for line in lines)
+        + f"\n\nPlease update your plans and reply if this causes a problem.\n\n{SIGN_OFF}"
+    )
+    return draft_email(ticket_id, to_addr, "load_in_notice", {
+        "subject": f"{zone} load-in change",
+        "body": body,
+        "context_used": [*context, zone, "load-in schedule"],
+        "actor": actor,
+    })

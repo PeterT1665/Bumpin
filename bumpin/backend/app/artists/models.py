@@ -55,3 +55,7 @@ class RunsheetRow(BaseModel):
     kind: Literal["set", "load_in"]
     status: str
     contact: str | None = None
+    #: Which artist this row IS, so the screen can offer to take it off the sheet again.
+    #: None on a vendor load-in, which is not a row the run sheet owns — the load-in
+    #: window lives on the vendor and is moved by approving that vendor's ticket.
+    artist_id: int | None = None

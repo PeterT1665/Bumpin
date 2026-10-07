@@ -324,6 +324,9 @@ class RiderHandler:
     def edit_action(self, ticket_id: int, index: int, actor: str, edits: dict) -> None:
         raise ValueError("Rider tickets have no proposed actions.")
 
+    def deny_action(self, ticket_id: int, index: int, actor: str) -> None:
+        raise ValueError("Rider tickets have no proposed actions.")
+
 
 register_handler("rider_needs", RiderHandler())
 

@@ -1,0 +1,328 @@
+/* Every value here is transcribed from Figma 7NlXeHdubRDwYnkxyXotvO:
+   113:2  "Bumpin - Upload Files"   (empty state)
+   113:43 "Bumpin - Files Uploaded" (populated state)
+   Node ids are cited beside anything that is not already a token. */
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* The canvas in Figma (113:29 / 113:70) is the full window height less its own
+     40px bottom padding; AppShell adds 40px top as well. --window-inset is the
+     brown backdrop on both sides. */
+  min-height: calc(100vh - (var(--window-inset) * 2) - 80px);
+
+  /* Three strings in the drop-zone copy carry NO Figma text style — textStyleId
+     is empty on 113:39, 113:41 and 113:42 — so no class in tokens.css matches
+     them. These are the literal values read off those nodes. Every other string
+     on this screen does map to a token and uses the token class. */
+  --zone-title-size: 28px;        /* 113:39 Funnel Display Bold 700 */
+  --zone-title-lh: 35px;          /* lineHeight AUTO, measured height 35 */
+  --zone-instruction-size: 17px;  /* 113:41 Funnel Sans 400 / 600 */
+  --zone-instruction-lh: 21px;    /* lineHeight AUTO, measured height 21 */
+  --zone-formats-size: 15px;      /* 113:42 Funnel Sans 400 */
+  --zone-formats-lh: 19px;        /* lineHeight AUTO, measured height 19 */
+}
+
+/* ---- the dashed surface -------------------------------------------------
+   113:35 (empty) and 113:80 (grid) are the same treatment:
+     fill        #faf4e7  = --surface-app
+     stroke      #b5ac99  = --ink-300, weight 1.5, align INSIDE
+     dashPattern [10, 8]
+     radius      24       = --r-card
+   CSS `border-style: dashed` cannot express a 10/8 pattern, so the outline is
+   drawn as an SVG rect overlay (.outline below). That means the element has no
+   CSS border, and the 1.5px the stroke occupies has to be folded into padding:
+   Figma padding 24 -> 25.5, 56 -> 57.5, 72 -> 73.5. */
+.zone {
+  position: relative;
+  background: var(--surface-app);
+  border-radius: var(--r-card);
+}
+
+.outline {
+  position: absolute;
+  /* Inset by half the stroke weight so the stroke, which straddles the path,
+     sits entirely inside the element — Figma's strokeAlign: INSIDE. */
+  inset: 0.75px;
+  width: calc(100% - 1.5px);
+  height: calc(100% - 1.5px);
+  overflow: visible;
+  pointer-events: none;
+  color: var(--ink-300);
+}
+
+/* Not in the design — 113:35 and 113:80 have no drag-over variant. Darkening
+   the stroke and sinking the fill one step is the smallest readable feedback
+   that stays inside the token set. */
+.zone_dragging { background: var(--surface-sunken); }
+.zone_dragging .outline { color: var(--ink-700); }
+
+/* ---- empty state --------------------------------------------------------
+   113:34 "Empty state canvas" is FILL/FILL with both axes centred; 113:35 is a
+   fixed 738 x 382 inside it. */
+.emptyWrap {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  min-height: 382px;
+}
+
+.zone_empty {
+  width: 738px;
+  max-width: 100%;
+  /* 113:35 is a FIXED 382. min-height renders identically (the content comes to
+     336) but spills instead of clipping if a font falls back and text grows. */
+  min-height: 382px;
+  padding: 57.5px 73.5px;   /* 113:35 padding 56 / 72 + 1.5 stroke */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* 113:36 — 88 x 88, fill #ffffff, 1px #e4dece, cornerRadius 999 */
+.zoneIcon {
+  flex: 0 0 auto;
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--ink-line);
+  display: grid;
+  place-items: center;
+}
+
+/* 113:38 "Copy" — VERTICAL, paddingTop 24, itemSpacing 10, counter CENTER.
+   The 24px between title and instruction is the 10 + the 1x4 "Gap" spacer
+   (113:40) + the 10 that follow it. */
+.copy {
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zoneTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--zone-title-size);
+  line-height: var(--zone-title-lh);
+  letter-spacing: 0;
+  color: var(--ink-900);
+}
+
+.instruction {
+  margin: 24px 0 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--zone-instruction-size);
+  line-height: var(--zone-instruction-lh);
+  color: var(--ink-500);
+}
+
+/* 113:41 second segment: #847244, Funnel Sans SemiBold 600, UNDERLINE SOLID.
+   A real button so the picker is reachable from the keyboard. */
+.selectLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--surface-backdrop);
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+
+.formats {
+  margin: 10px 0 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--zone-formats-size);
+  line-height: var(--zone-formats-lh);
+  color: var(--ink-500);
+}
+
+/* ---- populated state ----------------------------------------------------
+   113:75 "Files overview" — VERTICAL, itemSpacing 20, FILL / HUG */
+.overview {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+
+/* 113:76 "Files header" — HORIZONTAL, SPACE_BETWEEN, counter CENTER, h 28 */
+.filesHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+}
+
+.filesTitle {           /* 113:77 — 18/24 Funnel Display Medium = t-heading-sm */
+  margin: 0;
+  color: var(--ink-900);
+}
+
+/* A flex container, not a bare inline wrapper: an inline-flex pill inside an
+   inline span picks up the strut's leading and pushes the 28px row to 29.5. */
+.headerPill {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* 113:78 "Count" — 28 x 28, fill #1a1614 (--ink-900, NOT --surface-inverse),
+   cornerRadius 999; 113:79 text #ffffff 12/16 Funnel Sans Medium = t-label-sm */
+.count {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--surface-card);
+  display: grid;
+  place-items: center;
+}
+
+/* 113:80 "Files grid" — WRAP, itemSpacing 24, counterAxisSpacing 24,
+   padding 24 all round, height 710 FIXED, children a fixed 282 wide. */
+.zone_grid {
+  flex: 1 1 auto;
+  min-height: 710px;
+  padding: 25.5px;        /* 24 + 1.5 stroke */
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 282px);
+  gap: 24px;
+  align-content: start;
+  justify-content: start;
+  /* Figma's counterAxisAlignItems is MIN: cards hug their own content and sit
+     at the top of the row rather than stretching to the tallest. */
+  align-items: start;
+}
+
+/* ---- file card ----------------------------------------------------------
+   113:81 — 282 wide, HUG height, fill #ffffff, 1px #e4dece, radius 24,
+   DROP_SHADOW 0 2 10 #12141f @ 6% (exactly --shadow-card),
+   VERTICAL, itemSpacing 16, padding 20. */
+.card {
+  width: 282px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* 113:82 "Title row" — HORIZONTAL, itemSpacing 8, counter MIN */
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* 113:83 — 18/24 Funnel Display Medium = t-heading-sm, box 215 x 48.
+   48 is two lines at this line height, and every card in 113:80 reserves them,
+   so a short filename must not shrink the card out of the grid's rhythm. */
+.filename {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+  color: var(--ink-900);
+  overflow-wrap: anywhere;
+}
+
+/* 113:84 "•••" — 17 x 20, #7a7161, Funnel Sans SemiBold 600 at 16px.
+   t-body-md-b carries the 600/16px; only the AUTO line height differs. */
+.menu {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-500);
+}
+/* t-body-md-b sets line-height through the `font` shorthand, so matching
+   113:84's 20px box needs a selector that outranks a single class. */
+.titleRow .menu { line-height: 20px; }
+
+/* 113:85 "Footer" — HORIZONTAL, itemSpacing 12, counter CENTER */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 113:86 "Badge" — 36 x 36, fill #faf4e7, cornerRadius 18, no stroke;
+   113:87 text #4a4235, 12/16 Funnel Sans Medium = t-label-sm */
+.badge {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--surface-app);
+  color: var(--ink-700);
+  display: grid;
+  place-items: center;
+}
+
+/* 113:88 "Meta" — VERTICAL, itemSpacing 0, FILL / HUG */
+.meta {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.metaMain {             /* 113:89 — 16/24 Funnel Sans SemiBold = t-body-md-b */
+  margin: 0;
+  color: var(--ink-900);
+  overflow-wrap: anywhere;
+}
+
+.metaDate {             /* 113:90 — 14/20 Funnel Sans Regular = t-body-sm */
+  margin: 0;
+  color: var(--ink-500);
+}
+
+/* ---- rejected files -----------------------------------------------------
+   Not in the design: the two frames show no error path. Rendered after the
+   drop surface so the layout is byte-identical to Figma while it is empty. */
+.rejects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 20px;
+}
+
+.reject {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-700);
+  overflow-wrap: anywhere;
+}
+
+/* Reachable by keyboard and announced by screen readers, but drawn by the
+   dashed surface above rather than by the native control. */
+.srInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}

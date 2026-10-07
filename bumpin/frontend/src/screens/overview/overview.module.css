@@ -1,0 +1,287 @@
+/* Every number here is transcribed off the Figma frames, not inferred:
+   13:2  "Bumpin — Dashboard"            (the populated screen)
+   231:385 "Screen — Overview · empty"   (the empty specimen)
+   Node ids are quoted beside each block. Colours and type are tokens only. */
+
+/* ---------------------------------------------------------------- layout --
+   Greeting (14:54) sits at y=40..82; the first card row (26:2) starts at
+   y=136. AppShell's .topbar already contributes margin-bottom: 28px, so this
+   makes up the remaining 26px. Cards: 520 / 320 / 400 at x=112 / 656 / 1000
+   inside a 1288 content column -> three columns, 24px gutters.
+   This is padding, not margin: an adjacent-sibling margin would collapse with
+   the top bar's 28px and leave the row 26px high. */
+.cardRow {
+  padding-top: 26px;
+  display: grid;
+  grid-template-columns: 520fr 320fr 400fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Open tickets card (17:2) y=560; stat cards end at y=536 -> 24px. */
+.ticketsRow { margin-top: 24px; }
+
+/* --------------------------------------------------------- the stat cards --
+   26:2 / 157:2 / 35:2 are all 400 tall with absolutely placed children, so the
+   translation is a fixed-height card plus a positioning plane. The plane is
+   pulled out by the card's own border width so child offsets are measured from
+   the card's outer box exactly as Figma measures them. */
+.statCard.statCard {
+  --card-border: 1px;
+  position: relative;
+  height: 400px;
+  padding: 0;
+  overflow: hidden;          /* 26:2 clipsContent = true */
+}
+/* 157:2 and 231:553 both carry no stroke and no effects — verified twice in
+   the file and again by sampling the rendered PNG at the card's left, right
+   and bottom edges. Flagged in the report as a probable design-file slip. */
+.noChrome.noChrome {
+  --card-border: 0px;
+  border: 0;
+  box-shadow: none;
+}
+.plane { position: absolute; inset: calc(0px - var(--card-border)); }
+
+.absLeft   { position: absolute; }
+.absStretch{ position: absolute; left: 28px; right: 28px; }
+
+.cardTitle { margin: 0; color: var(--ink-900); }
+.hero      { margin: 0; color: var(--ink-900); }
+.heroCap   { margin: 0; color: var(--ink-500); }
+
+/* ------------------------------------------------------------- Intake 26:2
+   Empty specimen 231:515: title 28,28 · hero 28,52 · caption 28,102 ·
+   seven 44x160 tracks at y=160 on a 70px pitch · day labels at y=332. */
+.intakeTracks {
+  top: 160px;
+  height: 160px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 26px;                 /* 464 content - 7*44 = 156 over 6 gaps */
+}
+.track {                     /* 231:519 */
+  border: 1px solid var(--ink-line);
+  border-radius: 3px;
+  opacity: 0.7;
+}
+/* A day with mail replaces its outlined track with a bottom-anchored stack.
+   The 2px seam is 143:7/143:6, the 12px foot is the bottom radius on the last
+   segment of a stack; every other corner is the track's own 3px. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+}
+.seg { flex: 0 0 auto; border-radius: 3px; }
+.segFoot { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+
+/* 143:33..143:38 — one row under the day labels. Laid out rather than placed
+   at the three sampled x positions so a longer count cannot overlap. */
+.intakeLegend {
+  right: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.intakeLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+.intakeSwatch { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
+.intakeLegendValue { color: var(--ink-900); }
+
+.intakeDays {
+  top: 332px;
+  height: 16px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 26px;
+}
+.day { color: var(--ink-500); text-align: center; }
+
+/* -------------------------------------------------- Hospitality spend 157:2
+   Card padding is 24 a side, not 28. 19 cells a row at 11.4737 with a 3px
+   gutter exactly fills the 272px content width. Label rows at the four
+   transcribed offsets; cells always start 21px below their label. */
+.spendStretch { position: absolute; left: 24px; right: 24px; }
+.spendLabel   { color: var(--ink-900); height: 16px; }
+.spendValue   { color: var(--ink-700); }
+/* 157:7 and its three siblings: the category on the left, its figure right
+   aligned on the same baseline. */
+.spendHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  height: 16px;
+}
+.spendRow {
+  display: grid;
+  grid-template-columns: repeat(19, 1fr);
+  gap: 3px;
+}
+.cell { aspect-ratio: 1; border-radius: 3.5px; }
+.cellEmpty {                 /* 231:687 */
+  border: 1px solid var(--ink-line);
+  opacity: 0.7;
+}
+/* The category's step of the blue ramp is set inline; this is only the
+   fallback, and nothing should reach it. The chart is blue throughout. */
+.cellFill { border: 0; background: var(--spend-1); }
+
+.unitNote { color: var(--ink-500); }
+
+/* ------------------------------------------------------ Show readiness 35:2
+   The arc is thirteen 29x56 rounded rects (r=13) on a 140px radius about
+   (200, 262) in the card's 400x400 box, 180/13 = 13.84615 deg apart. SVG with
+   a viewBox reproduces that exactly at any rendered size. */
+.arc { position: absolute; inset: 0; width: 100%; height: 100%; }
+.arcEmpty { opacity: 0.5; }  /* 231:656 */
+
+.readyHero {
+  position: absolute;
+  left: 0; right: 0; top: 204px;
+  height: 54px;
+  margin: 0;
+  text-align: center;
+  color: var(--ink-900);
+}
+.readyHeroCap {
+  position: absolute;
+  left: 0; right: 0; top: 262px;
+  height: 24px;
+  margin: 0;
+  text-align: center;
+  color: var(--ink-500);
+}
+/* Legend 145:27..154:63 — columns at x=28/148/268 (120px pitch), rows at
+   y=313 and y=349 (36px pitch, which is label 16 + value 20). */
+.legend {
+  position: absolute;
+  left: 28px;
+  top: 313px;
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+}
+.legendItem { position: relative; height: 36px; padding-left: 18px; }
+.swatch {
+  position: absolute;
+  left: 0; top: 3px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.swatchOutline { background: none; border: 2px solid var(--ink-300); }
+.legendLabel { height: 16px; color: var(--ink-700); }
+.legendValue { height: 20px; color: var(--ink-900); }
+
+/* ------------------------------------------------------- Open tickets 17:2
+   Title 28,26 · sub 28,52 · tabs y=28 right-aligned to the content edge, and
+   a 1232px content strip running 28..1260.
+
+   The Card primitive puts its 1px border OUTSIDE its 26/28/28 padding, while
+   Figma draws the frame's stroke INSIDE the 1288x540 box — so the primitive's
+   padding alone lands every column 1px in and makes the strip 1230 instead of
+   1232. Trimming the padding by exactly the border width restores the Figma
+   coordinate system; the same correction is what .plane does on the stat
+   cards. (The real fix belongs in the primitive — see the report.) */
+.ticketsCard.ticketsCard {
+  padding: calc(26px - 1px) calc(var(--card-pad) - 1px) calc(var(--card-pad) - 1px);
+}
+
+.head { display: flex; align-items: flex-start; gap: 24px; }
+.headText { flex: 1 1 auto; min-width: 0; }
+.tableTitle { margin: 0; color: var(--ink-900); }
+.tableSub { margin: 2px 0 0; color: var(--ink-500); }
+
+.tabs { display: flex; gap: 8px; margin: 2px 0 0 auto; flex: 0 0 auto; }
+.tab {                       /* 17:7 — 84x32, r16, surface-sunken */
+  width: 84px;
+  height: 32px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface-sunken);
+  color: var(--ink-500);
+}
+.tabOn {                     /* 17:5 — surface-inverse with surface-app text */
+  background: var(--surface-inverse);
+  color: var(--surface-app);
+}
+
+/* Four columns, with the Row primitive's 16px grid gap folded into the track
+   widths. Dropping the checkbox and Type lets Source start at the strip's left
+   edge, and the three columns after it keep their Figma edges exactly:
+   Source 0..580 | Status 596..760 | Received 776..920 | Progress 936..1232.
+   580 + 164 + 144 + 296 + three 16px gaps = 1232, so the strip is filled and
+   nothing hangs past it. */
+.table { --cols: minmax(0, 1fr) 164px 144px 296px; }
+
+.thead {                     /* header text y=94..110, rule at y=120 */
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: var(--cols);
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ink-line);
+  color: var(--ink-500);
+}
+.tbody { padding-top: 7px; } /* rule ends 121, first row top 128 */
+
+.source { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.avatar {                    /* 17:22 — 36px circle, surface-sunken */
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  display: grid;
+  place-items: center;
+}
+.sourceText { min-width: 0; }
+.sourceName { color: var(--ink-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sourceSub  { color: var(--ink-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* StatusPill is inline-flex, but a bare grid item is blockified and stretched
+   to the full 164px track. The wrapper takes the stretch so the pill keeps
+   hugging its label the way 17:27 does. */
+.statusCell { display: flex; align-items: center; min-width: 0; }
+
+.date { color: var(--ink-500); }
+
+/* Progress cell — the old % column folded in. Track 17:31 runs 964..1144 and
+   the figure 17:33 sits at 1184..1260, so inside the 296px column that is
+   180 + a 40px gap + 76, right-aligned. */
+.progress { display: flex; align-items: center; gap: 40px; }
+.bar {                       /* 17:31 — 180x6, r3, surface-sunken */
+  flex: 0 0 180px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+/* 17:32 fills the same box. Figma colours a part-done bar yellow (17:32 at
+   70%, 17:102 at 15%) and a finished one green (17:46, 17:88). */
+.barFill { display: block; height: 100%; border-radius: 3px; background: var(--accent-yellow); }
+.barFillDone { background: var(--accent-green); }
+.pct { flex: 1 1 auto; text-align: right; color: var(--ink-900); }
+
+/* A ticket with no conflicts has no denominator, and one whose detail fetch
+   failed has no numbers at all. Both drop the track rather than draw an empty
+   one, which would read as 0% of something. */
+.progressNote { color: var(--ink-500); }
+
+/* Empty — no tickets 231:763. Rule ends at 121, the block sits 192..248 and
+   the card bottom is 320; the card's own 28px bottom padding covers the last
+   28 of the 72 below it. */
+.tableEmpty { padding: 71px 0 44px; text-align: center; }
+.tableEmptyTitle { margin: 0; color: var(--ink-900); }
+.tableEmptyBody  { margin: 8px auto 0; max-width: 640px; color: var(--ink-500); }
+.tableNote { padding: 40px 0; text-align: center; color: var(--ink-500); }

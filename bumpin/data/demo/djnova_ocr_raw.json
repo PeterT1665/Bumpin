@@ -1,0 +1,162 @@
+{
+ "image": "data/docs/riders/dj_nova_rider_handwritten.png",
+ "image_sha256_24": "130cc6f04a6f88c32bf51b73",
+ "dpi": 150,
+ "size": [
+  1241,
+  1754
+ ],
+ "engine": "rapidocr_onnxruntime",
+ "lines": [
+  {
+   "text": "DJ NOVA",
+   "confidence": 0.74,
+   "rect": [
+    123.0,
+    46.0,
+    408.0,
+    145.0
+   ]
+  },
+  {
+   "text": "Lveset,g9mntes",
+   "confidence": 0.706,
+   "rect": [
+    137.0,
+    143.0,
+    427.0,
+    198.0
+   ]
+  },
+  {
+   "text": "Stave:",
+   "confidence": 0.635,
+   "rect": [
+    114.0,
+    241.0,
+    213.0,
+    289.0
+   ]
+  },
+  {
+   "text": "Pneer CJ-3000",
+   "confidence": 0.77,
+   "rect": [
+    237.0,
+    285.0,
+    464.0,
+    334.0
+   ]
+  },
+  {
+   "text": "xPhoerMA-celmer",
+   "confidence": 0.631,
+   "rect": [
+    202.0,
+    333.0,
+    688.0,
+    384.0
+   ]
+  },
+  {
+   "text": "2 proesal bohmoniy spedbear",
+   "confidence": 0.548,
+   "rect": [
+    166.0,
+    375.0,
+    707.0,
+    450.0
+   ]
+  },
+  {
+   "text": "xmicrophnewih stanol",
+   "confidence": 0.638,
+   "rect": [
+    182.0,
+    433.0,
+    563.0,
+    483.0
+   ]
+  },
+  {
+   "text": "All eaupnat fill kese ondcerhnd epurho arstomlul",
+   "confidence": 0.557,
+   "rect": [
+    118.0,
+    474.0,
+    951.0,
+    536.0
+   ]
+  },
+  {
+   "text": "Mahy-heal ans",
+   "confidence": 0.649,
+   "rect": [
+    162.0,
+    531.0,
+    435.0,
+    574.0
+   ]
+  },
+  {
+   "text": "Sde liahts",
+   "confidence": 0.765,
+   "rect": [
+    164.0,
+    575.0,
+    373.0,
+    622.0
+   ]
+  },
+  {
+   "text": "Fa/smole Machhes x2",
+   "confidence": 0.721,
+   "rect": [
+    160.0,
+    616.0,
+    556.0,
+    676.0
+   ]
+  },
+  {
+   "text": "Jsina aay fer 6:Shll& gprkiy wter set doks",
+   "confidence": 0.528,
+   "rect": [
+    129.0,
+    748.0,
+    925.0,
+    817.0
+   ]
+  },
+  {
+   "text": "fieh frut ond sndes.Hotmed fr 4by18:00",
+   "confidence": 0.684,
+   "rect": [
+    193.0,
+    796.0,
+    925.0,
+    863.0
+   ]
+  },
+  {
+   "text": "4xbodkshae psses",
+   "confidence": 0.656,
+   "rect": [
+    151.0,
+    903.0,
+    410.0,
+    955.0
+   ]
+  },
+  {
+   "text": "Ix prchng space",
+   "confidence": 0.707,
+   "rect": [
+    142.0,
+    953.0,
+    380.0,
+    1010.0
+   ]
+  }
+ ]
+}

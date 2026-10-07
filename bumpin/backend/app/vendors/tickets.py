@@ -296,27 +296,45 @@ def _save_actions(conn, ticket_id: int, actions: list[dict]) -> None:
 
 
 def _apply_action(ticket_id: int, index: int, actor: str) -> int:
-    """Move the load-in time, draft the confirmation, mark the action approved."""
+    """Apply one action, draft its email, mark it approved. Returns the outbox id.
+
+    `move_load_in` is the only kind that writes to the run sheet. The knock-on
+    steps a moved load-in creates (crewing the gate earlier, warning the stall
+    next door) are `notify` actions: they draft a message and change nothing, so
+    turning one down costs the site nothing.
+    """
     with db.get_conn() as conn:
         t = _ticket(conn, ticket_id)
         actions = _actions(t) or []
         if not 0 <= index < len(actions):
             raise KeyError(f"action {index} not on ticket {ticket_id}")
         a = actions[index]
-        if a["status"] == "approved":
+        if a["status"] != "proposed":
             raise AlreadyDecided(a["approved_by"], t["updated_at"])
         vendor = db.row(conn.execute("SELECT * FROM vendors WHERE id = ?", (a["vendor_id"],)))
         old_start = vendor["load_in_start"]
-        conn.execute("UPDATE vendors SET load_in_start = ?, load_in_end = ? WHERE id = ?",
-                     (a["new_start"], a["new_end"], vendor["id"]))
-        audit(conn, ticket_id, actor, "load_in_changed",
-              {"vendor": vendor["name"], "from": old_start, "to": a["new_start"]})
-    outbox_id = emails.load_in_confirmation(ticket_id, vendor, old_start, a["new_start"], a["new_end"], actor)
+        if a["kind"] == "move_load_in":
+            conn.execute("UPDATE vendors SET load_in_start = ?, load_in_end = ? WHERE id = ?",
+                         (a["new_start"], a["new_end"], vendor["id"]))
+            audit(conn, ticket_id, actor, "load_in_changed",
+                  {"vendor": vendor["name"], "from": old_start, "to": a["new_start"]})
+        else:
+            audit(conn, ticket_id, actor, "action_approved", {"index": index, "title": a["title"]})
+    if a["kind"] == "move_load_in":
+        outbox_id = emails.load_in_confirmation(ticket_id, vendor, old_start, a["new_start"], a["new_end"], actor)
+    else:
+        # `detail` is card copy and ends in "drafts to ...", which is a note to
+        # the operator, not to the recipient; `lines` is what the notice says.
+        outbox_id = emails.load_in_notice(ticket_id, a["to_addr"], a.get("audience") or "team",
+                                          vendor["site_zone"], a.get("lines") or [a["detail"]],
+                                          actor, [vendor["name"]])
     with db.get_conn() as conn:
         actions = _actions(_ticket(conn, ticket_id))
         actions[index].update(status="approved", approved_by=actor, outbox_id=outbox_id)
         _save_actions(conn, ticket_id, actions)
-        if all(x["status"] == "approved" for x in actions):
+        # A denied row is decided too, so the ticket closes on the last verdict
+        # rather than waiting for an approval that is never coming.
+        if all(x["status"] != "proposed" for x in actions):
             conn.execute("UPDATE tickets SET status = 'resolved' WHERE id = ?", (ticket_id,))
             conn.execute("UPDATE findings SET status = 'resolved' WHERE ticket_id = ? AND status = 'open'",
                          (ticket_id,))
@@ -407,6 +425,32 @@ class VendorHandler:
         decide(ticket_id, actor, "approve_action", {"index": index})
         _apply_action(ticket_id, index, actor)
 
+    def deny_action(self, ticket_id: int, index: int, actor: str) -> None:
+        """Turn one proposed step down. The quiet mirror of approve_action:
+        nothing moves on the run sheet and no email is drafted, so saying no to
+        a consequence costs nobody a message. A document ticket has no steps to
+        turn down, which is a different refusal from an unknown index."""
+        with db.get_conn() as conn:
+            t = _ticket(conn, ticket_id)
+            actions = _actions(t)
+            if actions is None:
+                raise ValueError("Document tickets have no proposed actions.")
+            if not 0 <= index < len(actions):
+                raise KeyError(f"action {index} not on ticket {ticket_id}")
+            a = actions[index]
+            if a["status"] != "proposed":
+                raise AlreadyDecided(a["approved_by"], t["updated_at"])
+            a.update(status="denied", approved_by=actor)
+            _save_actions(conn, ticket_id, actions)
+            if all(x["status"] != "proposed" for x in actions):
+                conn.execute("UPDATE tickets SET status = 'resolved' WHERE id = ?", (ticket_id,))
+                conn.execute("UPDATE findings SET status = 'resolved' WHERE ticket_id = ? AND status = 'open'",
+                             (ticket_id,))
+            else:
+                conn.execute("UPDATE tickets SET status = 'in_progress' WHERE id = ?", (ticket_id,))
+            audit(conn, ticket_id, actor, "action_denied", {"index": index, "title": a["title"]})
+        notify(other_user(actor), ticket_id, f"{actor.title()} turned down: {a['title']}.")
+
     def edit_action(self, ticket_id: int, index: int, actor: str, edits: dict) -> None:
         with db.get_conn() as conn:
             t = _ticket(conn, ticket_id)
@@ -421,16 +465,18 @@ class VendorHandler:
             for key in ("new_start", "new_end", "to_addr", "detail", "title"):
                 if key in edits:
                     a[key] = edits[key]
-            if "new_start" in edits and "new_end" not in edits:
-                v = db.row(conn.execute("SELECT load_in_start, load_in_end FROM vendors WHERE id = ?",
-                                        (a["vendor_id"],)))
-                length = datetime.fromisoformat(v["load_in_end"]) - datetime.fromisoformat(v["load_in_start"])
-                a["new_end"] = (datetime.fromisoformat(a["new_start"]) + length).isoformat()
-            try:
-                datetime.fromisoformat(a["new_start"]), datetime.fromisoformat(a["new_end"])
-            except ValueError:
-                raise ValueError("new_start and new_end must be ISO timestamps.")
-            if "title" not in edits and "new_start" in edits:
+            # Only a move carries times; a notify step has none to validate.
+            if a["kind"] == "move_load_in":
+                if "new_start" in edits and "new_end" not in edits:
+                    v = db.row(conn.execute("SELECT load_in_start, load_in_end FROM vendors WHERE id = ?",
+                                            (a["vendor_id"],)))
+                    length = datetime.fromisoformat(v["load_in_end"]) - datetime.fromisoformat(v["load_in_start"])
+                    a["new_end"] = (datetime.fromisoformat(a["new_start"]) + length).isoformat()
+                try:
+                    datetime.fromisoformat(a["new_start"]), datetime.fromisoformat(a["new_end"])
+                except ValueError:
+                    raise ValueError("new_start and new_end must be ISO timestamps.")
+            if a["kind"] == "move_load_in" and "title" not in edits and "new_start" in edits:
                 a["title"] = a["title"].rsplit(" to ", 1)[0] + f" to {_hhmm(a['new_start'])}"
             _save_actions(conn, ticket_id, actions)
         decide(ticket_id, actor, "edit_action", {"index": index, "edits": edits})

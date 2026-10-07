@@ -72,7 +72,33 @@ def ticket_detail(ticket_id: int) -> dict:
             "decided_at": t["decided_at"],
             "created_at": t["created_at"],
             "updated_at": t["updated_at"],
+            "requirements": _requirements(conn, t),
         }
+
+
+def _requirements(conn, t) -> dict | None:
+    """How much the artist actually asked for, split technical / hospitality.
+
+    The ticket's findings are only the lines with a PROBLEM, so counting them
+    answers "what went wrong" and not "how much did they ask for" — and the
+    donut on the ticket is drawn to show the second. Every parsed line lives in
+    `rider_items`; nothing served it until now. Vendor and help tickets have no
+    rider, so they get null rather than a misleading zero.
+    """
+    if t["owner_type"] != "artist" or t["owner_id"] is None:
+        return None
+    rows = db.rows(conn.execute(
+        "SELECT category, COUNT(*) AS n FROM rider_items WHERE artist_id = ? GROUP BY category",
+        (t["owner_id"],)))
+    by = {r["category"]: r["n"] for r in rows}
+    total = sum(by.values())
+    if total == 0:
+        return None
+    return {
+        "total": total,
+        "technical": by.get("technical", 0),
+        "hospitality": by.get("hospitality", 0),
+    }
 
 
 @router.get("/tickets")
@@ -153,6 +179,11 @@ def reject(ticket_id: int, payload: dict | None = Body(default=None), user: str 
 @router.post("/tickets/{ticket_id}/actions/{index}/approve")
 def approve_action(ticket_id: int, index: int, user: str = Depends(current_user)):
     return _act(ticket_id, lambda h: h.approve_action(ticket_id, index, user))
+
+
+@router.post("/tickets/{ticket_id}/actions/{index}/deny")
+def deny_action(ticket_id: int, index: int, user: str = Depends(current_user)):
+    return _act(ticket_id, lambda h: h.deny_action(ticket_id, index, user))
 
 
 @router.post("/tickets/{ticket_id}/actions/{index}/edit")

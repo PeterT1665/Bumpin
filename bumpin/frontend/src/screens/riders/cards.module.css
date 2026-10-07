@@ -1,0 +1,130 @@
+/* Figma 121:2 / 191:2 "Bumpin suggestion" + "Bumpin warning",
+   199:2 "Card — Change actions" (200:3 / 201:3 / 202:3 / 203:15). */
+
+/* The shared shell: 440 wide, white, 1px #e4dece inside, r18, shadow-panel
+   (0 6px 20px #12141f/0.14). */
+.shell {
+  width: 440px;
+  max-width: 100%;
+  background: var(--surface-card);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-panel);
+}
+/* 204:89 — while its modal is open the card takes a 2px #4a4235 stroke. */
+.shellActive { border: 2px solid var(--ink-700); }
+
+/* ---- 121:2 / 191:2 single-finding card: pad 18/20/24/20 ---- */
+.finding { padding: 18px 20px 24px; }
+.head { display: flex; align-items: center; gap: 10px; }      /* 200:5 gap 10 */
+.headLabel { color: var(--ink-900); }                          /* 121:3 sans medium 14/20 */
+/* 121:4 Tag: r10, pad 2/8, soft tint, #1a1614 12/16 regular. */
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--r-chip);
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+.tag_pink   { background: var(--accent-pink-soft); }
+.tag_yellow { background: var(--accent-yellow-soft); }
+.tag_blue   { background: var(--accent-blue-soft); }
+
+.findingBody { margin: 10px 0 0; color: var(--ink-700); }       /* 121:6 */
+.findingFoot { display: flex; align-items: center; gap: 10px; margin-top: 28px; }  /* 121:7 -> 121:9 */
+
+/* ---- 200:3 change-actions card: pad 18/20/20/20, VERTICAL gap 14 ---- */
+.list { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; }
+.intro { display: flex; flex-direction: column; gap: 10px; }   /* 200:4 */
+.introBody { margin: 0; color: var(--ink-700); }               /* 200:9 sans regular 14/20 */
+
+.rows { display: flex; flex-direction: column; }               /* 200:10 gap 0 */
+.divider { height: 1px; background: var(--ink-line); flex: 0 0 auto; }  /* 200:11 */
+
+/* 200:12 Action row: HORIZONTAL gap 12, pad 12 top and bottom, counter CENTER.
+   202:22 switches the counter to MIN so the error sits under the copy. */
+.row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.rowBlocked { align-items: flex-start; }
+
+.copy { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rowTitle { margin: 0; color: var(--ink-900); }                /* 200:14 */
+.rowTitleDone { color: var(--ink-700); }                       /* 201:14 #4a4235 once approved */
+.rowDetail { margin: 0; color: var(--ink-500); }               /* 200:15 regular 12/16 */
+
+/* 202:55 Error slot: 6px above the box. 202:56: soft pink on pink, r8, pad 4/8,
+   dark text — there is no red in this system. */
+.errorSlot { padding-top: 6px; }
+.error {
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--accent-pink);
+  border-radius: 8px;
+  background: var(--accent-pink-soft);
+  color: var(--ink-900);
+}
+
+.rowActions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }   /* 200:16 */
+.rowStatus  { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }  /* 201:16 */
+.approvedBy { color: var(--ink-500); }                          /* 201:55 */
+.viewDraft {
+  border: 0; padding: 0; background: transparent;
+  color: var(--ink-700); text-decoration: underline;            /* 201:56 dec:UNDERLINE */
+}
+
+/* 200:17 Approve: #141210, r14, pad 6/14, #faf4e7 12/16 medium -> 28 tall.
+   200:19 Edit: white + 1px #e4dece, r14, pad 6/14 -> 30 tall with the border. */
+.pillBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.pillFilled  { background: var(--surface-inverse); color: var(--surface-app); }
+.pillOutline { background: var(--surface-card); color: var(--ink-700); border: 1px solid var(--ink-line); }
+.pillBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 200:52 Footer: a 12px rule-free gap then a plain text action. */
+/* flex, not block: an inline-block button in a block adds the line-box
+   descender and 200:52 is exactly 32 tall (12 + 20). */
+.listFoot { display: flex; padding-top: 12px; }
+.approveAll {
+  border: 0; padding: 0; background: transparent;
+  color: var(--ink-900);
+}
+.approveAll:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---- 203:15 Edit popover: 396 wide, pad 18/20/20/20, VERTICAL gap 14 ---- */
+.popover { width: 396px; max-width: 100%; }
+.popoverInner { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; }
+.popoverTitle { margin: 0; color: var(--ink-900); }             /* 203:16 */
+.fields { display: flex; flex-direction: column; gap: 8px; }    /* 203:17 */
+.inputs { display: flex; gap: 12px; }                           /* 203:18 */
+.field  { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }  /* 203:19 */
+.fieldLabel { color: var(--ink-500); }                          /* 203:20 */
+/* 203:21 Input: #f2ecdc, 1px #e4dece, r12, pad 10/12 -> 42 tall. */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ink-line);
+  border-radius: 12px;
+  background: var(--surface-sunken);
+  color: var(--ink-900);
+  font: 400 14px/20px var(--font-sans);
+  outline: 0;
+}
+.helper { margin: 0; color: var(--ink-500); }                   /* 203:27 */
+.popoverFoot { display: flex; align-items: center; gap: 10px; }  /* 203:28 */
+/* 203:29 Save: #141210, r20, pad 10/24 -> 40 tall.
+   203:31 Cancel: white + 1px, r20, pad 10/24 -> 42 tall. */
+.wideBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 24px;
+  border: 0;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.wideFilled  { background: var(--surface-inverse); color: var(--surface-app); }
+.wideOutline { background: var(--surface-card); color: var(--ink-700); border: 1px solid var(--ink-line); }
+
+.popoverWrap { position: relative; }

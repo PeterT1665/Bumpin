@@ -27,7 +27,7 @@ def build_runsheet() -> list[RunsheetRow]:
             out.append(RunsheetRow(
                 day=_day(a["set_start"]), start=a["set_start"], end=a["set_end"],
                 area=a["stage_name"] or "", who=a["name"], kind="set", status=a["status"],
-                contact=a["manager_email"],
+                contact=a["manager_email"], artist_id=a["id"],
             ))
         for v in db.rows(conn.execute("SELECT * FROM vendors WHERE load_in_start IS NOT NULL")):
             out.append(RunsheetRow(

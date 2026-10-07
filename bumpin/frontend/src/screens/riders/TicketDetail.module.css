@@ -1,0 +1,37 @@
+/* Figma 118:2 "Bumpin — Ticket detail" and 230:2 "Bumpin — Change ticket".
+   Same route, same geometry; only the left pane and the suggestion card differ.
+   Neither screen has a top bar — the canvas opens on the Back pill at 264,382,
+   which is the canvas origin plus its own 40px padding. */
+
+/* 118:29 Back: 150x36, r18, #f2ecdc. The chevron sits 15 in, the label 10 past
+   it; the pill itself is a fixed 150 in the mock, so the slack is to the right. */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 150px;
+  height: 36px;
+  padding: 0 0 0 15px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  text-decoration: none;
+}
+.backIcon { flex: 0 0 auto; overflow: visible; }
+
+/* 118:32: Funnel Display Bold 48/54, -2% — the display-lg style.
+   Back bottom 418 -> title 430 is 12; title bottom 484 -> split 514 is 30. */
+.title { margin: 12px 0 30px; color: var(--ink-900); }
+
+/* 119:2 at 264 is 948 wide; 122:2 at 1236 is 316 wide; 1212 -> 1236 is a 24 gap
+   and 948 + 24 + 316 = 1288, the full canvas content width. */
+.split { display: flex; align-items: flex-start; gap: 24px; }
+.left { flex: 1 1 auto; min-width: 0; }
+.rail { flex: 0 0 316px; width: 316px; display: flex; flex-direction: column; gap: 16px; }
+
+.state { padding: 56px 0; color: var(--ink-500); }
+
+/* The one outcome with nowhere else to go: a finding whose kind the backend does
+   not draft a reply for resolves with no email panel to open. */
+.note { margin: -14px 0 24px; color: var(--ink-700); }

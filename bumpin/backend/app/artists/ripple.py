@@ -221,7 +221,7 @@ def approve_action(ticket_id: int, index: int, actor: str) -> int:
         if not 0 <= index < len(actions):
             raise KeyError(f"action {index} not on ticket {ticket_id}")
         action = actions[index]
-        if action.status == "approved":
+        if action.status != "proposed":
             raise AlreadyDecided(action.approved_by, t["updated_at"])
         artist = db.row(conn.execute(
             "SELECT a.*, s.name AS stage_name FROM artists a LEFT JOIN stages s ON s.id = a.stage_id WHERE a.id = ?",
@@ -269,6 +269,35 @@ def approve_action(ticket_id: int, index: int, actor: str) -> int:
             conn.execute("UPDATE tickets SET status = 'in_progress' WHERE id = ?", (ticket_id,))
     notify(other_user(actor), ticket_id, f"{actor.title()} approved: {action.title}. Email drafted to {action.to_addr}.")
     return outbox_id
+
+
+def deny_action(ticket_id: int, index: int, actor: str) -> None:
+    """Turn one proposed action down.
+
+    The mirror of approve_action, and deliberately the quiet one: nothing moves
+    on the run sheet, no reservation shifts and no email is drafted. Saying no
+    to a consequence is a decision Ravi is allowed to make without it costing
+    anyone a message. The ticket closes once every action has been decided
+    either way, so a denied action does not leave it open forever.
+    """
+    with db.get_conn() as conn:
+        t, actions = _load_actions(conn, ticket_id)
+        if not 0 <= index < len(actions):
+            raise KeyError(f"action {index} not on ticket {ticket_id}")
+        action = actions[index]
+        if action.status != "proposed":
+            raise AlreadyDecided(action.approved_by, t["updated_at"])
+        action.status = "denied"
+        action.approved_by = actor
+        _save_actions(conn, ticket_id, actions)
+        if all(a.status != "proposed" for a in actions):
+            conn.execute("UPDATE tickets SET status = 'resolved' WHERE id = ?", (ticket_id,))
+            conn.execute("UPDATE findings SET status = 'resolved' WHERE ticket_id = ? AND status = 'open'",
+                         (ticket_id,))
+        else:
+            conn.execute("UPDATE tickets SET status = 'in_progress' WHERE id = ?", (ticket_id,))
+        audit(conn, ticket_id, actor, "action_denied", {"index": index, "title": action.title})
+    notify(other_user(actor), ticket_id, f"{actor.title()} turned down: {action.title}.")
 
 
 def edit_action(ticket_id: int, index: int, actor: str, edits: dict) -> ProposedAction:
@@ -329,6 +358,10 @@ class HelpHandler:
     def edit_action(self, ticket_id: int, index: int, actor: str, edits: dict) -> None:
         decide(ticket_id, actor, "edit_action", {"index": index, "edits": edits})
         edit_action(ticket_id, index, actor, edits)
+
+    def deny_action(self, ticket_id: int, index: int, actor: str) -> None:
+        decide(ticket_id, actor, "deny_action", {"index": index})
+        deny_action(ticket_id, index, actor)
 
 
 register_handler("help", HelpHandler())

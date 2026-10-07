@@ -1,0 +1,94 @@
+/* ---- card ---- */
+.card {
+  background: var(--surface-card);
+  border-radius: var(--r-card);
+  /* Figma uses strokeAlign INSIDE, so the stated height already contains the
+     1px. A real CSS border would add 2px and inset every child. */
+  box-shadow: inset 0 0 0 1px var(--ink-line), var(--shadow-card);
+  padding: 26px var(--card-pad) var(--card-pad);
+}
+.cardHead { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 26px; }
+.cardHead > div:first-child { flex: 1 1 auto; min-width: 0; }
+.cardTitle { margin: 0; color: var(--ink-900); }
+.cardSub { margin: 2px 0 0; color: var(--ink-500); }
+.cardActions { display: flex; align-items: center; gap: 8px; }
+
+/* ---- status pill ---- */
+/* Solid accent fills, not the soft tints — see the Figma dashboard table. */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 14px 0 12px;
+  border-radius: 14px;
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-900); }
+.pill_ok       { background: var(--accent-green); }
+.pill_progress { background: var(--accent-pink); }
+.pill_warn     { background: var(--accent-yellow); }
+.pill_neutral  { background: var(--surface-sunken); }
+
+/* ---- chip ---- */
+.chip {
+  display: inline-flex; align-items: center;
+  height: 20px; padding: 0 8px;
+  border-radius: var(--r-chip);
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+.chip_pink   { background: var(--accent-pink-soft); }
+.chip_green  { background: var(--accent-green-soft); }
+.chip_yellow { background: var(--accent-yellow-soft); }
+.chip_blue   { background: var(--accent-blue-soft); }
+.chip_quiet  { background: var(--surface-sunken); color: var(--ink-500); }
+
+/* ---- stat strip ---- */
+.statStrip { display: flex; gap: 32px; }
+.stat { min-width: 150px; }
+.statLabel { color: var(--ink-500); }
+.statValue { margin-top: 4px; color: var(--ink-900); }
+.statRule { height: 3px; border-radius: 2px; margin-top: 4px; }
+.rule_pink   { background: var(--accent-pink); }
+.rule_green  { background: var(--accent-green); }
+.rule_yellow { background: var(--accent-yellow); }
+.rule_blue   { background: var(--accent-blue); }
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn_md { height: 40px; padding: 0 24px; border-radius: 20px; }
+.btn_sm { height: 28px; padding: 0 14px; border-radius: 14px; font-size: 12px; }
+.btn_filled  { background: var(--surface-inverse); color: var(--surface-app); }
+.btn_outline { background: var(--surface-card); color: var(--ink-700); border-color: var(--ink-line); }
+.btn_quiet   { background: transparent; color: var(--ink-700); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---- filter pill ---- */
+.filter {
+  height: 36px; padding: 0 20px;
+  border: 0; border-radius: var(--r-pill);
+  background: var(--surface-sunken); color: var(--ink-700);
+}
+.filterOn { background: var(--surface-inverse); color: var(--surface-app); }
+
+/* ---- empty state ---- */
+.empty { padding: 60px 24px 33px; text-align: center; }
+.emptyIcon { color: var(--ink-500); margin-bottom: 16px; }
+.emptyTitle { margin: 0; color: var(--ink-900); }
+.emptyBody { margin: 16px auto; max-width: 680px; color: var(--ink-500); }
+
+/* ---- table ---- */
+.table { display: flex; flex-direction: column; }
+.thead,
+.row {
+  display: grid;
+  grid-template-columns: var(--cols, repeat(auto-fit, minmax(0, 1fr)));
+  align-items: center;
+  gap: 16px;
+}
+.thead { color: var(--ink-500); padding-bottom: 10px; border-bottom: 1px solid var(--ink-line); }
+.row { min-height: var(--row-pitch); border-bottom: 1px solid var(--ink-line); }
+.row:last-child { border-bottom: 0; }

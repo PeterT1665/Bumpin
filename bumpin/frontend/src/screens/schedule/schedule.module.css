@@ -1,0 +1,180 @@
+/* The two table screens share one anatomy: a controls row, a card with a
+   title block, and a table. Every number below was read off the Figma nodes
+   named in the comment beside it — nothing here is estimated. */
+
+/* ---- controls row: Figma 212:418 (Run sheet) / 224:184 (Equipment) ----
+   1288x69, SPACE_BETWEEN, counter axis MAX so the two halves sit on a shared
+   baseline, gap 24. The 28px below it is the Canvas auto-layout gap (212:25). */
+.controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+/* Figma 212:419 / 224:185 — "Sorting controls", gap 16 between groups. */
+.controlsLeft { display: flex; align-items: center; gap: 16px; }
+
+/* Figma 212:420 — the three day pills are 118x36 and sit 8px apart. The
+   FilterPill primitive already carries the height, radius and both fills; only
+   the fixed width is particular to this screen. */
+.tabs { display: flex; align-items: center; gap: 8px; }
+.tabs > button { width: 118px; }
+
+/* ---- card title block: Figma 214:3 / 214:4, 228:12 / 228:13 ----
+   Title top 26 (the card's own padding), sub top 52, header row top 94. */
+.head { margin-bottom: 26px; }
+.headTitle { margin: 0; color: var(--ink-900); }
+.headSub { margin: 2px 0 0; color: var(--ink-500); }
+/* Not in the design — the search tally, one line under the sub at the same
+   quiet weight so it never competes with the card title. */
+.headNote { margin: 6px 0 0; color: var(--ink-700); }
+
+/* ---- column tracks ----
+   Column x measured from the card's content box, which starts at the 28px card
+   padding, and the 16px gap the Table primitive puts between tracks:
+
+     Run sheet  214:5..214:11   0  112  272  622  772  902  1142   (1232 wide)
+     Equipment  228:14..228:21  0  220  350  520  630  750  870  1142
+
+   Each track is its pitch minus the 16px gap, written as fr so the table still
+   reflows; at the design width the starts land within 2px of Figma, which is
+   exactly the CSS-border versus Figma-inside-stroke difference on the card. */
+/* The last track on each is the remove control. It is not in the design — 212:2
+   and 224:147 are read-only — and it is deliberately the narrowest thing on the
+   row: a destructive control should be reachable, not prominent.
+   Its 44 comes OUT of the widest column rather than on top of the total (Needs
+   334 -> 290, Held by 256 -> 212). Added to the total instead, every other
+   track loses its share of it and Time starts rendering "05:30 – 07:…". The
+   widest column is the one with the slack to give. */
+.runsheetCols  { --cols: 96fr 144fr 290fr 134fr 114fr 224fr 90fr 44fr; }
+.equipmentCols { --cols: 204fr 114fr 154fr 94fr 104fr 104fr 212fr 90fr 44fr; }
+
+/* ---- cells ----
+   Row text is 14/20 at #1a1614; the name column is Medium, the rest Regular.
+   Contact is 12/16 at #7a7161 (Figma 216:16). */
+.cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ink { color: var(--ink-900); }
+.quiet { color: var(--ink-500); }
+
+/* Figma 228:65 — an empty Held by reads as an em dash at #b5ac99. */
+.none { color: var(--ink-300); }
+
+/* ---- the remove control ---- */
+
+/* Faint until it is pointed at. A minus on every row at full strength turns a
+   table people READ into a table of buttons, and the one thing nobody should
+   do by accident is the one thing with no undo. It stays visible rather than
+   appearing on row hover because the row's class comes from the primitives
+   module, and a selector reaching across two CSS modules would break silently
+   the first time that class is renamed. */
+.removeCell { display: flex; align-items: center; justify-content: flex-end; }
+.remove {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-300);
+  cursor: pointer;
+  transition: background-color 90ms ease-out, color 90ms ease-out;
+}
+.remove:hover, .remove:focus-visible {
+  background: var(--accent-pink-soft);
+  color: var(--ink-900);
+}
+.remove:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 1px; }
+.remove:disabled { opacity: .4; cursor: not-allowed; background: transparent; }
+
+/* The refusal. The endpoint is the only thing that can turn a removal down, so
+   its sentence is shown verbatim, in the card's own note slot. */
+.removeError { color: var(--accent-pink); }
+
+/* Figma 228:28 sits at x=770 while the plain numeral 228:48 sits at x=778: the
+   chip is pulled 8px left by its own padding so the two line up in-column. */
+.freeChip { margin-left: -8px; }
+
+/* ---- empty specimen: Figma 231:1311 ----
+   680 wide and centred, 16px between every part, 60px below the header rule
+   and 33px above the card's bottom padding. */
+.empty {
+  width: 680px;
+  max-width: 100%;
+  margin: 60px auto 33px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+/* Figma 231:1312 — 32x22, 2px centre-aligned stroke at #7a7161, round caps.
+   overflow stays visible so the stroke bleeds the same 1px it does in Figma. */
+.emptyGlyph { display: block; overflow: visible; color: var(--ink-500); }
+.emptyTitle { margin: 0; color: var(--ink-900); }
+.emptyBody { margin: 0; color: var(--ink-500); }
+
+/* ---- add-row panel ----
+   Not in the design: 212:2 and 224:147 are read-only tables. Assembled instead
+   out of parts that are drawn, so a form the mock never specified still belongs
+   to the same system — the sunken surface and 1px #e4dece of the email body box
+   (204:353) at the panel radius, carrying the field stack of the edit popover
+   (203:17..21) and its 14px vertical rhythm. 26px below it is the same gap the
+   title block leaves above the header row. */
+.panel {
+  margin-bottom: 26px;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-panel);
+  background: var(--surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.panelTitle { margin: 0; color: var(--ink-900); }
+/* 203:18 — the controls sit in one row 12px apart. They wrap rather than squeeze
+   below the design's 1288, because a 60px-wide date control is unreadable. */
+.panelFields { display: flex; flex-wrap: wrap; gap: 12px; }
+.panelFoot { display: flex; align-items: center; gap: 10px; }        /* 203:28 */
+
+/* A refusal is pink, like every other conflict in this system, and worn the way
+   Chip does it — the soft fill behind full-strength ink, because #eba2d5 as
+   14px text on the sunken panel is not readable. */
+.panelError {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--r-chip);
+  background: var(--accent-pink-soft);
+  color: var(--ink-900);
+}
+
+/* 203:19 — label above control, 6px apart. The basis keeps a wrapped row from
+   leaving a control too narrow to read its own value. */
+.field {
+  flex: 1 1 150px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fieldLabel { color: var(--ink-500); }                               /* 203:20 */
+
+/* 203:21 Input — 1px #e4dece, r12, pad 10/12, so 42 tall. The design fills it
+   with #f2ecdc because it sits on a white popover; here the panel is already
+   #f2ecdc, so the fill and the surface swap places to keep the box a box. */
+.control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ink-line);
+  border-radius: 12px;
+  background: var(--surface-card);
+  color: var(--ink-900);
+  font: 400 14px/20px var(--font-sans);
+  outline: 0;
+}
+.control:focus-visible { border-color: var(--ink-500); }

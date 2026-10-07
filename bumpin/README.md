@@ -2,6 +2,8 @@
 
 AI-powered vendor and rider CRM for Fieldday Events' Riverside festival. See `CLAUDE.md` and `docs/CONTRACT.md`.
 
+**Demoing it?** Read [`DEMO.md`](DEMO.md) first — how to start both halves, what the walk-through is, which buttons write for real, and `./scripts/demo-reset` to put the data back between run-throughs.
+
 ## Run the backend
 
 Needs Python 3.11 or newer. From this `bumpin/` folder:

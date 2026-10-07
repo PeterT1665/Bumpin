@@ -1,0 +1,197 @@
+/* Figma 119:2 "Source document" (948x828) and 121:11 "Pages" (948x84).
+   Both are white, 1px #e4dece inside, r24, shadow-card. */
+
+.pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 56px;                       /* 119:2 @514 -> 119:3 @570 */
+  min-height: 828px;
+}
+/* Everything inside the padding box, so highlight offsets are pane-content px.
+   `.content` is also what a hover-anchored card is clamped to, so a highlight
+   near an edge still shows the whole card — which is why it STRETCHES to the
+   pane's padding box (836x716 on 119:2) instead of stopping at its own content
+   height. An email shorter than the pane left only ~330px to clamp into, less
+   than the actions card is tall, and the clamp then gave up and parked the card
+   at the top of the document instead of under the line it belongs to. */
+.content { position: relative; flex: 1 1 auto; }
+/* The positioning context the highlights and the anchored card share. */
+.stage { position: relative; }
+
+/* ---- document header (text documents only) ---- */
+.metaLine  { margin: 0; color: var(--ink-500); }                      /* 119:3 overline */
+.metaSub   { margin: 12px 0 0; color: var(--ink-500); }               /* 119:4 @598 */
+.subject   { margin: 12px 0 0; color: var(--ink-900); }               /* 231:3 sans semibold 16/24 */
+.headRule  { height: 1px; background: var(--ink-line); margin: 20px 0 32px; }  /* 119:5 @634 -> 119:6 @666 */
+
+/* ---- text document body ---- */
+/* 231:5..231:11 are Funnel Sans Regular 14/20 #1a1614. The real body arrives as
+   one string with newlines, so it is one pre-wrap block and the highlight is an
+   inline span at the character offsets. */
+.textBody {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  color: var(--ink-900);
+  font: 400 14px/20px var(--font-sans);
+}
+
+/* ---- the highlight itself ---- */
+/* 119:29 box: r5, 5px either side of the text, 3px above and below (26 tall for
+   a 20px line). 119:30 underline: 2px, r1, flush under the box. */
+.mark {
+  border-radius: 5px;
+  padding: 3px 5px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-900);
+  cursor: pointer;
+}
+.mark_pink   { background: var(--accent-pink-soft);   border-bottom-color: var(--accent-pink); }
+.mark_yellow { background: var(--accent-yellow-soft); border-bottom-color: var(--accent-yellow); }
+.mark_blue   { background: var(--accent-blue-soft);   border-bottom-color: var(--accent-blue); }
+
+/* The "point at me" affordance, the way Grammarly's flagged text answers the
+   pointer: the tint deepens toward its own solid accent and nothing else moves.
+   Background and outline are both outside the flow, so no reflow on hover.
+   `.pinned` holds that same deepened tint after the pointer has gone, so a card
+   parked open still shows which highlight it belongs to. */
+.mark, .box { transition: background-color 90ms ease-out; }
+.mark.mark_pink:hover,   .mark.mark_pink:focus-visible,   .mark.mark_pink.pinned,
+.box.box_pink:hover,     .box.box_pink:focus-visible,     .box.box_pink.pinned
+  { background: color-mix(in srgb, var(--accent-pink) 55%, var(--accent-pink-soft)); }
+.mark.mark_yellow:hover, .mark.mark_yellow:focus-visible, .mark.mark_yellow.pinned,
+.box.box_yellow:hover,   .box.box_yellow:focus-visible,   .box.box_yellow.pinned
+  { background: color-mix(in srgb, var(--accent-yellow) 55%, var(--accent-yellow-soft)); }
+.mark.mark_blue:hover,   .mark.mark_blue:focus-visible,   .mark.mark_blue.pinned,
+.box.box_blue:hover,     .box.box_blue:focus-visible,     .box.box_blue.pinned
+  { background: color-mix(in srgb, var(--accent-blue) 55%, var(--accent-blue-soft)); }
+.mark:focus-visible, .box:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 1px; }
+
+/* ---- pdf / image page + overlay ---- */
+/* `isolation` keeps the overlay's multiply blend (see `.box`) inside the page
+   rather than letting it reach the canvas behind it. */
+.page { position: relative; margin: 0 auto; isolation: isolate; }
+/* Height comes from `padding-bottom` rather than `aspect-ratio` (see
+   DocumentPane.tsx), which leaves the element itself zero-high — so the frame
+   has to be stretched over the padding box rather than given a height. */
+.pagePdf { overflow: hidden; }
+/* The viewer's top inset is a pixel short of its side inset, so the frame is
+   pushed down by that pixel and the overflow it causes at the bottom is
+   clipped. `width`/`height` stay on `.pageMedia`: an iframe is a replaced
+   element, so `inset: 0` alone leaves it at its intrinsic 300x150. */
+.pagePdf .pageMedia { position: absolute; top: 1px; left: 0; }
+.pageMedia { display: block; width: 100%; height: 100%; border: 0; background: var(--surface-card); }
+/* No highlight on the document means no page_size, so there is no ratio to lock
+   to: an image keeps its intrinsic ratio and a PDF gets the pane's own content
+   height (828 - 56 - 56 = 716, Figma 119:2). */
+.mediaAuto { height: auto; }
+.mediaTall { height: 716px; }
+.overlay { position: absolute; inset: 0; }
+/* Boxes carry the same 5/3 outset and flush 2px underline as the inline mark. */
+/* 119:29 is a 26-tall r5 fill and 119:30 is a SEPARATE 2px r1 bar flush under
+   it, so the bar is a pseudo-element: a border-bottom would eat 2px of the fill
+   and would pick up the 5px radius. */
+.box {
+  position: absolute;
+  box-sizing: content-box;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 0;
+  /* The box sits ON TOP of the rendered page, so an opaque fill hides the very
+     line it is pointing at. One highlight on a page made that hard to see;
+     a page where every parsed field is highlighted turns into a wall of
+     blocks. Multiply leaves the light tint over white paper and lets the dark
+     glyphs through unchanged — the same trick the vendor pane already uses. */
+  mix-blend-mode: multiply;
+}
+.box::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 100%;
+  height: 2px; border-radius: 1px; background: currentColor;
+}
+/* Settled: still legibly a highlight, just no longer live. At a third of the
+   tint it read as gone rather than as dealt with, which is the complaint this
+   whole behaviour was meant to fix — so it keeps most of its colour and keeps
+   its bar, in neutral ink rather than the accent. Inert either way. */
+.boxCleared { opacity: .55; pointer-events: none; }
+.boxCleared::after { background: var(--ink-300); }
+.boxCleared.mark { border-bottom-color: var(--ink-300); }
+
+.box_pink   { background: var(--accent-pink-soft);   color: var(--accent-pink); }
+.box_yellow { background: var(--accent-yellow-soft); color: var(--accent-yellow); }
+.box_blue   { background: var(--accent-blue-soft);   color: var(--accent-blue); }
+
+.noPage { display: grid; place-items: center; min-height: 320px; color: var(--ink-500); text-align: center; }
+
+/* ---- quotes with no box ---- */
+/* "If the quote cannot be located, store the finding without a box and show the
+   quote as text." (CONTRACT.md s.10) */
+.quotes { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
+.quotesHead { margin: 0 0 4px; color: var(--ink-500); }
+.quoteRow { margin: 0; color: var(--ink-700); font: 400 14px/20px var(--font-sans); }
+
+/* ---- anchored suggestion card ---- */
+/* 191:2 and 121:2 are both drawn 440 wide beside their highlight. The card is
+   placed by DocumentPane off the highlight's bottom-right and clamped inside
+   `.content`, so a highlight near an edge still shows the whole card. */
+.anchor { position: absolute; width: 440px; z-index: 2; }
+/* Nothing to anchor to (a finding whose quote could not be placed, or a document
+   with no open highlight left): the card falls back into the flow under the
+   document rather than becoming unreachable. */
+.anchorFlow { margin: 32px 0 0 auto; width: 440px; max-width: 100%; }
+
+/* ---- pager ---- */
+.pager {
+  position: relative;
+  margin-top: 16px;                    /* 119:2 bottom 1342 -> 121:11 @1358 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;                           /* 121:12 @518 + 40 = 558 -> 121:16 @574 */
+  height: 84px;
+  padding: 0 36px;
+  background: var(--surface-card);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+/* 121:12 Prev / 121:14 Next: 40x40 r20 #f2ecdc, chevron #4a4235 1.7 round. */
+.step svg, .pageNavIcon { overflow: visible; }
+.step {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 20px;
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  flex: 0 0 auto;
+}
+.step:disabled { opacity: .45; cursor: not-allowed; }
+
+.thumbs { display: flex; align-items: center; gap: 12px; }  /* 121:16 574 -> 121:22 642 */
+/* 121:16 inactive: 56x72 r8 #f2ecdc + 1px #e4dece, bars #e4dece.
+   121:22 active:   56x72 r8 #ffffff + 2px #1a1614,   bars #b5ac99. */
+.thumb {
+  position: relative;
+  width: 56px; height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  flex: 0 0 auto;
+  /* An inset shadow rather than a border, so the bars below stay 10px from the
+     outer edge exactly as in 121:17 (584 against a thumb at 574). */
+  box-shadow: inset 0 0 0 1px var(--ink-line);
+}
+.thumbOn { background: var(--surface-card); box-shadow: inset 0 0 0 2px var(--ink-900); }
+.bar { position: absolute; height: 2px; background: var(--ink-line); }
+.thumbOn .bar { background: var(--ink-300); }
+
+/* 121:46: right-aligned caption, 36 from the pane edge, vertically centred. */
+.pageCount { position: absolute; right: 36px; color: var(--ink-500); }
