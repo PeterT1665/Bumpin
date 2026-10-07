@@ -138,7 +138,7 @@ def create_help_ticket(email_id: int, classification) -> int:
     if artist is None:
         return _unmatched_ticket(email, "help", "Change request received but the artist could not be identified.")
 
-    text = f"Subject: {email.get('subject') or ''}\n\n{email.get('body') or ''}"
+    text = f"{email.get('body') or ''}\n\nSubject: {email.get('subject') or ''}"
     change = ai.parse_change(text)
     actions = ripple_for_change(artist["id"], change)
     major = bool(getattr(classification, "is_major_change", False)) or change.kind in ("cancellation", "delay")

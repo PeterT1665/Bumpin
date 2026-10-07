@@ -13,6 +13,14 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # Python 3.
 
 `openpyxl` was added to `requirements.txt` for the xlsx export.
 
+## How to test
+
+1. **Unit and flow tests:** `.venv/bin/python -m pytest -q`. Each check has a passing and a failing case, plus approve, reject, resolve, revised rider, ripple, highlights, run sheet and xlsx.
+2. **Scenario walkthrough:** `.venv/bin/python scripts/demo_artists.py`. Runs problems 1, 2, 3 and 6 on a throwaway database and prints each ticket, finding, highlight rectangle, blocked approval, allocation and drafted email. It inserts the email rows itself, standing in for `/inbox/receive`, so it works before your pipeline lands. Once the pipeline is in, the same emails are in `data/demo/emails/*.json`.
+3. **In the browser:** start uvicorn and open `http://localhost:8000/docs`. Try `POST /api/demo/reset`, `GET /api/overview`, `/api/artists`, `/api/inventory` (Halcyon holds the Moog after reset), `/api/runsheet` and `/api/export/runsheet.xlsx`. After running the walkthrough against the real database, `GET /api/documents/{id}/highlights` returns the CDJ rectangle.
+
+The rider and help ticket flows have no HTTP route of their own yet, because `/inbox/receive` and `/tickets` are yours. When your tickets router dispatches to my handlers, the whole flow is testable over HTTP.
+
 ## What exists
 
 | Area | Where |
