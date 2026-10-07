@@ -31,7 +31,7 @@ def test_cards_empty_after_reset(client):
 def test_cards_shape_and_order_for_all_demo_emails(client):
     ids = {name: send(client, name)["ticket_id"] for name in ALL}
     cards = client.get("/api/phone/cards?user=ravi").json()
-    assert len(cards) == len(ALL)
+    assert len(cards) == len(set(ids.values()))  # the Sparkle photo reopens the Sparkle ticket
     for c in cards:
         assert {"id", "ticket_id", "urgency", "reason", "title", "summary", "snippet", "actions",
                 "created_at"} <= c.keys()
