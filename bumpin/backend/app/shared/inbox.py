@@ -169,14 +169,16 @@ def receive(msg: InboundEmail) -> dict:
     status = _apply_policy(ticket_id, cls)
 
     with db.get_conn() as conn:
+        flagged = conn.execute("SELECT is_major_change FROM emails WHERE id = ?", (email_id,)).fetchone()[0]
+        major = bool(cls.is_major_change or flagged)  # a ticket creator may also flag a major change
         conn.execute("UPDATE emails SET ticket_id = ?, classification = ?, confidence = ?, is_major_change = ? "
-                     "WHERE id = ?", (ticket_id, cls.label, cls.confidence, int(cls.is_major_change), email_id))
+                     "WHERE id = ?", (ticket_id, cls.label, cls.confidence, int(major), email_id))
         ticket = db.row(conn.execute("SELECT * FROM tickets WHERE id = ?", (ticket_id,)))
         audit(conn, ticket_id, "system", "email_routed",
               {"email_id": email_id, "label": cls.label, "confidence": cls.confidence, "role": role})
 
     notified = False
-    if cls.is_major_change and within_major_window():
+    if major and within_major_window():
         notify("ravi", ticket_id, f"Major change: {ticket['summary']}")
         notified = True
 
@@ -189,6 +191,7 @@ def receive(msg: InboundEmail) -> dict:
         "routing": "auto_filed" if status in ("open", "in_progress") else "needs_review",
         "confidence_band": band,
         "notified_ravi": notified,
+        "is_major_change": major,
         "classification": cls.model_dump(),
     }
 

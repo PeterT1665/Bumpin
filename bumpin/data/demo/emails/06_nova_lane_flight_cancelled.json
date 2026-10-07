@@ -1,0 +1,6 @@
+{
+  "from": "chris@novalane.example.test",
+  "subject": "URGENT: flight cancelled",
+  "body": "Hi Ravi,\n\nBad news: our flight from Sydney has been cancelled. We are rebooked and land at 9:40pm, so Nova Lane cannot make the 21:15 set on the River Stage. Please tell us what you can do.\n\nChris Wu\nNova Lane management",
+  "attachments": []
+}

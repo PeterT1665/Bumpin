@@ -1,0 +1,8 @@
+{
+  "from": "tom@marlowcatering.example.test",
+  "subject": "Marlow Catering: food safety certificate for Riverside",
+  "body": "Hi Riverside team,\n\nAttached is our food safety certificate for the River Food Court stall. Our insurance and permit are already with you.\n\nCheers,\nTom Marlow\nMarlow Catering",
+  "attachments": [
+    "data/docs/vendors/marlow_catering_food_safety.pdf"
+  ]
+}

@@ -252,7 +252,8 @@ def test_edit_action_changes_time():
 
 def test_runsheet_and_xlsx_match():
     rows = build_runsheet()
-    assert len(rows) == 45 and rows == sorted(rows, key=lambda r: (r.start, r.area))
+    assert len([r for r in rows if r.kind == "set"]) == 45
+    assert rows == sorted(rows, key=lambda r: (r.start, r.area))
     ws = load_workbook(BytesIO(runsheet_xlsx())).active
     data = list(ws.iter_rows(min_row=2, values_only=True))
     assert len(data) == len(rows)
@@ -287,7 +288,7 @@ def test_drafts_have_no_em_or_en_dashes():
 
 def test_fifteen_sets_a_day_and_applied_artists_have_no_slot():
     per_day: dict[str, int] = {}
-    for r in build_runsheet():
+    for r in (r for r in build_runsheet() if r.kind == "set"):
         per_day[r.start[:10]] = per_day.get(r.start[:10], 0) + 1
     assert per_day == {"2026-12-11": 15, "2026-12-12": 15, "2026-12-13": 15}
     with TestClient(app) as client:
