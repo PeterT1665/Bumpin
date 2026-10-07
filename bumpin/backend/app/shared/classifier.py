@@ -1,18 +1,19 @@
-"""Jev-style email classifier.
+"""Email classifier.
 
-Two independent LLM calls with enum-constrained output.
-If the labels differ, confidence = min(confidence, 0.5).
-Otherwise confidence = mean of the two.
+With JEV_API_KEY set, TypeSafe's Jev model decides (shared/jev.py): the label is a choice
+question and its confidence comes from Jev's probability spread. Otherwise, or if Jev fails,
+two independent LLM calls with enum-constrained output are used. If the labels differ,
+confidence = min(confidence, 0.5), else the mean of the two. With no LLM at all, keyword rules.
 """
 
 from __future__ import annotations
 
 import re
-import re
 from typing import Literal
 
 from pydantic import BaseModel
 
+from backend.app.shared import jev
 from backend.app.shared.llm import complete_json
 
 
@@ -108,7 +109,33 @@ def heuristic_classify(text: str) -> Classification:
     )
 
 
+def _jev_classify(text: str) -> Classification:
+    answers = jev.evaluate(text)
+    label = answers["label"]
+    role = answers["sender_role"]["choice"]
+    major = answers["is_major_change"]["noul"] >= 0.5
+    # The keyword rules only supply a hint for the entity name; the address book overrides it later.
+    return Classification(
+        label=label["choice"],
+        confidence=round(float(label["confidence"]), 3),
+        reason=f"Jev chose {label['choice']} ({label['probabilities'][label['choice']]:.2f}).",
+        sender_role=role,
+        entity_hint=None,
+        is_major_change=major,
+    )
+
+
 def classify(text: str) -> Classification:
+    """Jev when a key is set, else the two-pass LLM check, else keyword rules."""
+    if jev.enabled():
+        try:
+            return _jev_classify(text)
+        except Exception:
+            pass  # network, auth, rate limit or an unexpected reply: fall through
+    return _classify_llm(text)
+
+
+def _classify_llm(text: str) -> Classification:
     """Classify an email using two independent LLM calls for agreement checking."""
     prompt_a = _CLASSIFY_PROMPT.format(text=text)
     prompt_b = "SECOND INDEPENDENT PASS. " + prompt_a
