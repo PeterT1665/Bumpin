@@ -19,6 +19,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # Python 3.
 2. **Scenario walkthrough:** `.venv/bin/python scripts/demo_artists.py`. Runs problems 1, 2, 3 and 6 on a throwaway database and prints each ticket, finding, highlight rectangle, blocked approval, allocation and drafted email. It inserts the email rows itself, standing in for `/inbox/receive`, so it works before your pipeline lands. Once the pipeline is in, the same emails are in `data/demo/emails/*.json`.
 3. **In the browser:** start uvicorn and open `http://localhost:8000/docs`. Try `POST /api/demo/reset`, `GET /api/overview`, `/api/artists`, `/api/inventory` (Halcyon holds the Moog after reset), `/api/runsheet` and `/api/export/runsheet.xlsx`. After running the walkthrough against the real database, `GET /api/documents/{id}/highlights` returns the CDJ rectangle.
 
+4. **Highlight preview:** `.venv/bin/python scripts/preview_highlights.py` writes `data/preview/highlights.html` and you open it in a browser. It shows problems 1, 2, 3, 6 and 7 with the highlights drawn from the real `/file` and `/highlights` responses: a PDF box, a photo box found by OCR, and underlined email text.
+
 The rider and help ticket flows have no HTTP route of their own yet, because `/inbox/receive` and `/tickets` are yours. When your tickets router dispatches to my handlers, the whole flow is testable over HTTP.
 
 ## What exists
