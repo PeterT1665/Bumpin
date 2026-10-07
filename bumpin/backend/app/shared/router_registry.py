@@ -8,4 +8,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-ROUTERS: list[APIRouter] = []
+from backend.app.shared.notifications import router as notifications_router
+
+ROUTERS: list[APIRouter] = [notifications_router]
