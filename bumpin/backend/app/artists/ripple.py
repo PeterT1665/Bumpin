@@ -13,7 +13,8 @@ from backend.app import db
 from backend.app.artists import ai, emails
 from backend.app.artists._compat import AlreadyDecided, audit, decide, notify, now, other_user, register_handler
 from backend.app.artists.models import ProposedAction
-from backend.app.artists.tickets import _unmatched_ticket, find_artist
+from backend.app.artists.models import Finding
+from backend.app.artists.tickets import _unmatched_ticket, email_document, find_artist, insert_finding
 
 CHANGEOVER = timedelta(minutes=15)
 REVIEW_CONFIDENCE = 0.60  # below this the request is too unclear to propose a new slot
@@ -147,6 +148,7 @@ def create_help_ticket(email_id: int, classification) -> int:
     actions = ripple_for_change(artist["id"], change)
     major = bool(getattr(classification, "is_major_change", False)) or change.kind in ("cancellation", "delay")
     first_move = actions[0]
+    doc_id = email_document(email, artist["id"])
     summary = f"{artist['name']}: {change.reason.rstrip('.')}. Proposed: move to {_hhmm(first_move.new_start)}."
 
     with db.get_conn() as conn:
@@ -158,14 +160,11 @@ def create_help_ticket(email_id: int, classification) -> int:
              json.dumps([a.model_dump() for a in actions]), now(), now()),
         )
         tid = int(cur.lastrowid)
-        conn.execute(
-            """INSERT INTO findings (ticket_id, kind, severity, message, suggestion, quote, status, bbox_json)
-               VALUES (?, 'schedule_change', ?, ?, ?, ?, 'open', ?)""",
-            (tid, "conflict" if major else "warning",
-             f"{artist['name']} ({_hhmm(artist['set_start'])}, {_stage_name(conn, artist)}): {change.reason}",
-             "Review the proposed actions below. Each one drafts its email only when approved.",
-             change.quote, json.dumps({"facts": change.model_dump()})),
-        )
+        insert_finding(conn, tid, Finding(
+            kind="schedule_change", severity="conflict" if major else "warning",
+            message=f"{artist['name']} ({_hhmm(artist['set_start'])}, {_stage_name(conn, artist)}): {change.reason}",
+            suggestion="Review the proposed actions below. Each one drafts its email only when approved.",
+            doc_id=doc_id, quote=change.quote, page=1, facts=change.model_dump()))
         conn.execute("UPDATE emails SET ticket_id = ?, is_major_change = ? WHERE id = ?",
                      (tid, int(major), email_id))
         audit(conn, tid, "system", "ticket_created", {"type": "help", "change": change.kind})
@@ -175,7 +174,8 @@ def create_help_ticket(email_id: int, classification) -> int:
 def _review_ticket(email: dict, artist: dict, classification) -> int:
     """Unclear request: no slot is proposed, Ravi decides what to ask the artist."""
     conf = getattr(classification, "confidence", 0.0)
-    snippet = " ".join((email.get("body") or "").split())[:200]
+    doc_id = email_document(email, artist["id"])
+    quote = ai.heuristic_change(email.get("body") or "").quote or " ".join((email.get("body") or "").split())[:120]
     with db.get_conn() as conn:
         cur = conn.execute(
             """INSERT INTO tickets (type, owner_type, owner_id, status, severity, summary, created_at, updated_at)
@@ -184,13 +184,12 @@ def _review_ticket(email: dict, artist: dict, classification) -> int:
              now(), now()),
         )
         tid = int(cur.lastrowid)
-        conn.execute(
-            """INSERT INTO findings (ticket_id, kind, severity, message, suggestion, quote, status)
-               VALUES (?, 'low_confidence', 'warning', ?, ?, ?, 'open')""",
-            (tid, f"{artist['name']}'s team asked about their set, but did not say when or why. "
-                  f"BumpIn is not sure what they want, so no new slot is proposed.",
-             "Reply and ask for a specific time, or ignore if it is not a real request.", snippet),
-        )
+        insert_finding(conn, tid, Finding(
+            kind="low_confidence", severity="warning",
+            message=f"{artist['name']}'s team asked about their set, but did not say when or why. "
+                    f"BumpIn is not sure what they want, so no new slot is proposed.",
+            suggestion="Reply and ask for a specific time, or ignore if it is not a real request.",
+            doc_id=doc_id, quote=quote, page=1))
         conn.execute("UPDATE emails SET ticket_id = ? WHERE id = ?", (tid, email["id"]))
         audit(conn, tid, "system", "ticket_created", {"type": "help", "low_confidence": conf})
     return tid

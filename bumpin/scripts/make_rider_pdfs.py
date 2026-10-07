@@ -102,11 +102,25 @@ def build(filename: str, pages: list[list[tuple[str, str]]]) -> None:
     pdf.output(str(OUT / filename))
 
 
+def make_photo(pdf_name: str, page: int, out_name: str) -> None:
+    """A phone-photo style JPEG of one rider page: slightly rotated, off-white, compressed."""
+    import fitz
+    from PIL import Image
+
+    with fitz.open(str(OUT / pdf_name)) as pdf:
+        pdf[page - 1].get_pixmap(dpi=110).save(str(OUT / "_page.png"))
+    im = Image.open(OUT / "_page.png").convert("RGB").rotate(1.5, expand=True, fillcolor=(235, 232, 225))
+    im.save(OUT / out_name, quality=55)
+    (OUT / "_page.png").unlink()
+    print("wrote", OUT / out_name)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for filename, pages in RIDERS.items():
         build(filename, pages)
         print("wrote", OUT / filename)
+    make_photo("sparkle_rider.pdf", 2, "sparkle_rider_photo.jpg")
 
 
 if __name__ == "__main__":

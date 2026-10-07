@@ -74,6 +74,18 @@ def create_rider_ticket(email_id: int, classification) -> int:
     return ticket_id
 
 
+def email_document(email: dict, artist_id: int | None) -> int:
+    """Store an email body as a text document so a quote in it can be underlined."""
+    with db.get_conn() as conn:
+        cur = conn.execute(
+            """INSERT INTO documents (owner_type, owner_id, kind, filename, path, extracted_text,
+                                      received_at, email_id)
+               VALUES ('artist', ?, 'other', ?, '', ?, ?, ?)""",
+            (artist_id, f"email_{email['id']}.txt", email.get("body") or "", now(), email["id"]),
+        )
+        return int(cur.lastrowid)
+
+
 def _unmatched_ticket(email: dict, ticket_type: str, summary: str) -> int:
     with db.get_conn() as conn:
         cur = conn.execute(

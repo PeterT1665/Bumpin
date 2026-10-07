@@ -308,3 +308,63 @@ def test_vague_request_goes_to_review_without_proposed_slot():
     assert "unclear" in t["summary"] and start == "2026-12-12T18:00:00"
     assert [f["kind"] for f in findings(tid)] == ["low_confidence"]
     assert outbox() == []
+
+
+# --- highlights in the three input formats: PDF, photo, plain email ------------------------
+
+def highlights(doc_id: int) -> list[dict]:
+    with TestClient(app) as client:
+        return client.get(f"/api/documents/{doc_id}/highlights").json()
+
+
+def test_photo_rider_is_read_by_ocr_and_highlighted():
+    tid = tickets.create_rider_ticket(
+        receive("sam@sparkle-mgmt.example.test", attachment="data/docs/riders/sparkle_rider_photo.jpg"), CLS)
+    f = next(x for x in findings(tid) if x["kind"] == "shortage")
+    assert "3" in f["message"] and "CDJ-3000" in f["message"] and f["severity"] == "conflict"
+    boxes = highlights(f["doc_id"])
+    assert len(boxes) == 1 and boxes[0]["type"] == "image" and boxes[0]["severity"] == "conflict"
+    x0, y0, x1, y1 = boxes[0]["rect"]
+    w, h = boxes[0]["page_size"]
+    assert 0 <= x0 < x1 <= w and 0 <= y0 < y1 <= h and (y1 - y0) < 40
+    # Same page as the PDF rider: the CDJ line sits in the upper part of the photo.
+    assert y0 < h * 0.25
+
+
+def test_email_text_underline_for_pasted_rider():
+    body = NEON_BODY
+    tid = tickets.create_rider_ticket(receive("leo@neontide.example.test", body), CLS)
+    f = next(x for x in findings(tid) if x["kind"] == "double_booking")
+    boxes = highlights(f["doc_id"])
+    assert len(boxes) == 1 and boxes[0]["type"] == "text" and boxes[0]["severity"] == "conflict"
+    assert body[boxes[0]["start"]:boxes[0]["end"]] == "1x Analogue synth (Moog One)"
+    with TestClient(app) as client:
+        assert client.get(f"/api/documents/{f['doc_id']}/file").text == body
+
+
+def test_help_email_quote_is_underlined():
+    tid = nova_ticket()
+    f = findings(tid)[0]
+    box = highlights(f["doc_id"])[0]
+    with TestClient(app) as client:
+        text = client.get(f"/api/documents/{f['doc_id']}/file").text
+    assert box["type"] == "text" and text[box["start"]:box["end"]] == f["quote"]
+    assert "cancelled" in f["quote"]
+
+
+def test_vague_email_quote_is_underlined():
+    body = "Could we maybe go on a bit later? Cheers."
+    eid = receive("priya@halcyon-music.example.test", body, subject="Set time")
+    tid = ripple.create_help_ticket(eid, SimpleNamespace(confidence=0.5, entity_hint="Halcyon",
+                                                         is_major_change=True, label="help_or_change"))
+    f = findings(tid)[0]
+    box = highlights(f["doc_id"])[0]
+    assert body[box["start"]:box["end"]] == "Could we maybe go on a bit later?"
+
+
+def test_highlight_reports_status_and_hides_ignored():
+    tid = sparkle_ticket()
+    f = next(x for x in findings(tid) if x["kind"] == "shortage")
+    assert highlights(f["doc_id"])[0]["status"] == "open"
+    tickets.ignore_finding(tid, f["id"], "ravi")
+    assert highlights(f["doc_id"]) == []

@@ -84,7 +84,7 @@ artists.create_help_ticket(email_id, classification)    # help_or_change from an
 
 - `findings.bbox_json`: `{"page": 2, "page_size": [595.3, 841.9], "rects": [[x0, y0, x1, y1]], "facts": {...}}`. Points, origin top-left. Findings without a box may still have `{"facts": {...}}`.
 - `tickets.proposed_actions_json` (help tickets): list of `{index, kind: "move_set" | "notify", title, detail, to_addr, artist_id, new_start, new_end, status: "proposed" | "approved", approved_by, outbox_id}`.
-- `GET /api/documents/{id}/highlights`: `[{page, rect, page_size, finding_id, severity}]`, as in contract section 13.
+- `GET /api/documents/{id}/highlights`: boxes for the three input formats (PDF points, photo pixels found by OCR, email text offsets to underline), as in contract sections 10 and 13. Vendor PDFs can reuse `artists.riders.locate(doc_id, page, quote)`, which returns the same shape for all three.
 - `GET /api/inventory`: each item has `aliases` (list) and `allocations` (`artist_name`, `quantity`, `start_ts`, `end_ts`).
 
 ## Without an API key

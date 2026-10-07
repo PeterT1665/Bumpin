@@ -1,0 +1,8 @@
+{
+  "from": "sam@sparkle-mgmt.example.test",
+  "subject": "Sparkle rider (photo of the printed copy)",
+  "body": "Hi team, the PDF export broke so here is a photo of the printed rider. Sorry about the quality.\n\nSam",
+  "attachments": [
+    "data/docs/riders/sparkle_rider_photo.jpg"
+  ]
+}

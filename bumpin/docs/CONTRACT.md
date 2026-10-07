@@ -162,7 +162,7 @@ Header `X-User: ravi | jess` identifies the actor.
 - `POST /tickets/{id}/findings/{fid}/ignore` and `.../resolve`.
 - `POST /tickets/{id}/approve` and `POST /tickets/{id}/reject` with `{reason}`. Returns 409 with `{decided_by, decided_at}` if already decided.
 - `POST /tickets/{id}/actions/{index}/approve` and `.../edit` (help tickets).
-- `GET /documents/{id}/file` and `GET /documents/{id}/highlights` (list of `{page, rect, finding_id, severity}`).
+- `GET /documents/{id}/file` and `GET /documents/{id}/highlights` (list of boxes, see section 13). `file` serves the PDF or image, or the email text for text documents.
 - `POST /inbox/receive` with `{from, subject, body, attachments[]}` runs the pipeline.
 - `GET /outbox`, `PATCH /outbox/{id}`, `POST /outbox/{id}/send`.
 - `GET /inventory`, `GET /artists`, `GET /vendors`, `GET /runsheet`, `GET /export/runsheet.xlsx`.
@@ -185,7 +185,13 @@ Header `X-User: ravi | jess` identifies the actor.
 
 ## 10. Highlights
 
-For digital PDFs: the LLM returns the exact quote for each requirement. Find it in the text layer with PyMuPDF `page.search_for(quote)` and store the rectangles in `findings.bbox_json`. If the quote cannot be located, store the finding without a box and show the quote as text. Images and handwriting get no highlight.
+Three input formats are supported. The LLM returns the exact quote for each requirement, and code finds where it sits:
+
+- **PDF with a text layer:** PyMuPDF `page.search_for(quote)`. Rectangles are in PDF points.
+- **Photo (png, jpg):** OCR (RapidOCR) reads the text with a box per line, the same pipeline then runs on that text, and the quote is matched to the OCR lines ignoring spacing. Rectangles are in image pixels, narrowed to the quote when it is part of a longer line.
+- **Plain email text:** the quote is located in the email body and returned as character offsets, for the UI to underline.
+
+Results are stored in `findings.bbox_json`. If the quote cannot be located, store the finding without a box and show the quote as text. Handwriting and other file types get no highlight.
 
 ## 11. Concurrency and notifications
 
@@ -228,11 +234,18 @@ Until the backend skeleton lands, build against these example payloads as fixtur
 }
 ```
 
-`GET /api/documents/8/highlights` (rectangles are PDF points, origin top-left):
+`GET /api/documents/8/highlights`. Every entry has `type`, `page`, `finding_id`, `severity` (only `conflict` is red) and `status` (hide or grey out entries that are not `open`). Origin is top-left.
+
+- `pdf`: `rect` in PDF points. `image`: `rect` in image pixels. Both carry `page_size`, so draw at `rect / page_size` of the rendered size.
+- `text` (email body): `start` and `end` are character offsets into the text from `GET /documents/{id}/file`. Underline that span.
 
 ```json
-[{"page": 2, "rect": [72.0, 310.5, 290.0, 326.0], "page_size": [595, 842],
-  "finding_id": 31, "severity": "conflict"}]
+[{"type": "pdf", "page": 2, "rect": [72.0, 310.5, 290.0, 326.0], "page_size": [595, 842],
+  "finding_id": 31, "severity": "conflict", "status": "open"},
+ {"type": "image", "page": 1, "rect": [82.0, 118.0, 248.0, 142.0], "page_size": [944, 1311],
+  "finding_id": 32, "severity": "conflict", "status": "open"},
+ {"type": "text", "page": 1, "start": 112, "end": 140,
+  "finding_id": 33, "severity": "conflict", "status": "open"}]
 ```
 
 `GET /api/phone/cards?user=ravi`:

@@ -119,15 +119,19 @@ def document_file(doc_id: int):
 
 @router.get("/documents/{doc_id}/highlights")
 def document_highlights(doc_id: int) -> list[dict]:
+    """One entry per box. type is pdf (points), image (pixels) or text (character offsets to underline)."""
     _document(doc_id)
     with db.get_conn() as conn:
         findings = db.rows(conn.execute(
-            "SELECT id, severity, page, bbox_json FROM findings WHERE doc_id = ? AND status != 'ignored'",
+            "SELECT id, severity, status, bbox_json FROM findings WHERE doc_id = ? AND status != 'ignored'",
             (doc_id,)))
     out = []
     for f in findings:
         box = json.loads(f["bbox_json"]) if f["bbox_json"] else {}
+        base = {"type": box.get("kind", "pdf"), "page": box.get("page", 1), "finding_id": f["id"],
+                "severity": f["severity"], "status": f["status"]}
+        if base["type"] == "text":
+            out.append({**base, "start": box["start"], "end": box["end"]})
         for rect in box.get("rects", []):
-            out.append({"page": box["page"], "rect": rect, "page_size": box["page_size"],
-                        "finding_id": f["id"], "severity": f["severity"]})
+            out.append({**base, "rect": rect, "page_size": box["page_size"]})
     return out
