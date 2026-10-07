@@ -1,0 +1,8 @@
+[
+  {"id": 1, "name": "Sparkle", "manager_name": "Sam Ortiz", "manager_email": "sam@sparkle-mgmt.example.test", "stage_id": 1, "set_start": "2026-12-11T20:00:00", "set_end": "2026-12-11T21:30:00", "status": "in_progress", "hospitality_cap": null},
+  {"id": 2, "name": "Halcyon", "manager_name": "Priya Nair", "manager_email": "priya@halcyon-music.example.test", "stage_id": 2, "set_start": "2026-12-12T18:00:00", "set_end": "2026-12-12T19:15:00", "status": "in_progress", "hospitality_cap": null},
+  {"id": 3, "name": "Neon Tide", "manager_name": "Leo Grant", "manager_email": "leo@neontide.example.test", "stage_id": 3, "set_start": "2026-12-12T18:45:00", "set_end": "2026-12-12T19:45:00", "status": "in_progress", "hospitality_cap": null},
+  {"id": 4, "name": "Marlow & The Lanes", "manager_name": "Ada Brooks", "manager_email": "ada@marlowlanes.example.test", "stage_id": 2, "set_start": "2026-12-13T19:00:00", "set_end": "2026-12-13T20:15:00", "status": "in_progress", "hospitality_cap": 1200},
+  {"id": 5, "name": "Nova Lane", "manager_name": "Chris Wu", "manager_email": "chris@novalane.example.test", "stage_id": 1, "set_start": "2026-12-12T21:15:00", "set_end": "2026-12-12T22:45:00", "status": "completed", "hospitality_cap": 2500},
+  {"id": 6, "name": "Dusk Theory", "manager_name": "Mia Kowalski", "manager_email": "mia@dusktheory.example.test", "stage_id": 1, "set_start": "2026-12-12T23:00:00", "set_end": "2026-12-13T00:15:00", "status": "completed", "hospitality_cap": null}
+]

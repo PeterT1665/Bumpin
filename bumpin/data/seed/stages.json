@@ -1,0 +1,5 @@
+[
+  {"id": 1, "name": "River Stage", "location": "Main field, river end"},
+  {"id": 2, "name": "Lawn Stage", "location": "Open-air lawn, north"},
+  {"id": 3, "name": "Dome Stage", "location": "Tent dome, east path"}
+]

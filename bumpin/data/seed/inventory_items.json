@@ -1,0 +1,18 @@
+[
+  {"id": 1, "stage_id": 1, "canonical_name": "Pioneer CDJ-3000", "category": "dj", "quantity_total": 2, "aliases_json": ["CDJ-3000", "CDJ 3000", "CDJ3000", "CDJs", "Pioneer CDJ 3000"]},
+  {"id": 2, "stage_id": 1, "canonical_name": "Pioneer DJM-900NXS2", "category": "dj", "quantity_total": 1, "aliases_json": ["DJM-900", "DJM 900", "DJM900", "DJM-900NXS2", "DJ mixer"]},
+  {"id": 3, "stage_id": 1, "canonical_name": "Monitor wedge", "category": "audio", "quantity_total": 6, "aliases_json": ["wedge", "wedges", "monitor wedges", "foldback"]},
+  {"id": 4, "stage_id": 1, "canonical_name": "Shure SM58", "category": "audio", "quantity_total": 8, "aliases_json": ["SM58", "SM-58", "vocal mic", "vocal microphone"]},
+  {"id": 5, "stage_id": 1, "canonical_name": "DI box", "category": "audio", "quantity_total": 6, "aliases_json": ["DI", "DI boxes", "direct box"]},
+  {"id": 6, "stage_id": 1, "canonical_name": "Drum riser", "category": "staging", "quantity_total": 1, "aliases_json": ["riser", "drum platform"]},
+  {"id": 7, "stage_id": 2, "canonical_name": "Pioneer CDJ-3000", "category": "dj", "quantity_total": 2, "aliases_json": ["CDJ-3000", "CDJ 3000", "CDJ3000", "CDJs", "Pioneer CDJ 3000"]},
+  {"id": 8, "stage_id": 2, "canonical_name": "Pioneer DJM-900NXS2", "category": "dj", "quantity_total": 1, "aliases_json": ["DJM-900", "DJM 900", "DJM900", "DJM-900NXS2", "DJ mixer"]},
+  {"id": 9, "stage_id": 2, "canonical_name": "Monitor wedge", "category": "audio", "quantity_total": 4, "aliases_json": ["wedge", "wedges", "monitor wedges", "foldback"]},
+  {"id": 10, "stage_id": 2, "canonical_name": "Shure SM58", "category": "audio", "quantity_total": 6, "aliases_json": ["SM58", "SM-58", "vocal mic", "vocal microphone"]},
+  {"id": 11, "stage_id": 3, "canonical_name": "Pioneer CDJ-2000NXS2", "category": "dj", "quantity_total": 2, "aliases_json": ["CDJ-2000", "CDJ 2000", "CDJ2000", "CDJ-2000NXS2"]},
+  {"id": 12, "stage_id": 3, "canonical_name": "Monitor wedge", "category": "audio", "quantity_total": 2, "aliases_json": ["wedge", "wedges", "monitor wedges", "foldback"]},
+  {"id": 13, "stage_id": 3, "canonical_name": "Shure SM58", "category": "audio", "quantity_total": 4, "aliases_json": ["SM58", "SM-58", "vocal mic", "vocal microphone"]},
+  {"id": 14, "stage_id": null, "canonical_name": "Moog One analog synth", "category": "instrument", "quantity_total": 1, "aliases_json": ["Moog One", "Moog", "analog synth", "analogue synth", "analog synthesizer", "analogue synthesiser"]},
+  {"id": 15, "stage_id": null, "canonical_name": "Keyboard stand", "category": "staging", "quantity_total": 2, "aliases_json": ["keys stand", "X stand", "keyboard stands"]},
+  {"id": 16, "stage_id": null, "canonical_name": "Haze machine", "category": "fx", "quantity_total": 2, "aliases_json": ["hazer", "fog machine", "smoke machine", "haze"]}
+]
