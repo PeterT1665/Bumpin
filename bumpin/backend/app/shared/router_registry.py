@@ -12,4 +12,6 @@ from backend.app.shared.notifications import router as notifications_router
 
 from backend.app.shared.outbox import router as outbox_router
 
-ROUTERS: list[APIRouter] = [notifications_router, outbox_router]
+from backend.app.shared.tickets import router as tickets_router
+
+ROUTERS: list[APIRouter] = [notifications_router, outbox_router, tickets_router]
