@@ -10,4 +10,6 @@ from fastapi import APIRouter
 
 from backend.app.shared.notifications import router as notifications_router
 
-ROUTERS: list[APIRouter] = [notifications_router]
+from backend.app.shared.outbox import router as outbox_router
+
+ROUTERS: list[APIRouter] = [notifications_router, outbox_router]
