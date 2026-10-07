@@ -252,7 +252,7 @@ def test_edit_action_changes_time():
 
 def test_runsheet_and_xlsx_match():
     rows = build_runsheet()
-    assert len(rows) == 60 and rows == sorted(rows, key=lambda r: (r.start, r.area))
+    assert len(rows) == 45 and rows == sorted(rows, key=lambda r: (r.start, r.area))
     ws = load_workbook(BytesIO(runsheet_xlsx())).active
     data = list(ws.iter_rows(min_row=2, values_only=True))
     assert len(data) == len(rows)
@@ -265,7 +265,8 @@ def test_overview_and_inventory_endpoints():
         ov = client.get("/api/overview").json()
         inv = client.get("/api/inventory").json()
         xlsx = client.get("/api/export/runsheet.xlsx")
-    assert ov["suppliers"]["artists"] == 60 and ov["open_conflicts"] == 1
+    assert ov["suppliers"]["artists"] == 60 and ov["suppliers"]["artists_scheduled"] == 45
+    assert ov["suppliers"]["artists_applied"] == 15 and ov["open_conflicts"] == 1
     synth = next(i for i in inv if i["id"] == 14)
     assert synth["allocations"][0]["artist_name"] == "Halcyon"
     assert xlsx.status_code == 200 and xlsx.content[:2] == b"PK"
@@ -282,3 +283,13 @@ def test_drafts_have_no_em_or_en_dashes():
         assert "\u2014" not in d["body"] + d["subject"] and "\u2013" not in d["body"] + d["subject"]
     for f in findings(tid) + findings(nova):
         assert "\u2014" not in f["message"] and "\u2013" not in f["message"]
+
+
+def test_fifteen_sets_a_day_and_applied_artists_have_no_slot():
+    per_day: dict[str, int] = {}
+    for r in build_runsheet():
+        per_day[r.start[:10]] = per_day.get(r.start[:10], 0) + 1
+    assert per_day == {"2026-12-11": 15, "2026-12-12": 15, "2026-12-13": 15}
+    with TestClient(app) as client:
+        applied = [a for a in client.get("/api/artists").json() if a["status"] == "applied"]
+    assert len(applied) == 15 and all(a["set_start"] is None and a["stage_id"] is None for a in applied)

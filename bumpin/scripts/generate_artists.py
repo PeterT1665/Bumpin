@@ -1,4 +1,5 @@
 """Write data/seed/artists.json: 6 hand-crafted artists plus generated ones up to 60.
+45 are scheduled (15 a day), the other 15 have applied and have no set time yet.
 
 Run from bumpin/:  .venv/bin/python scripts/generate_artists.py
 Generated artists get clean, non-overlapping slots and no rider problems.
@@ -13,7 +14,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "seed" / "artists.json"
-TOTAL = 60
+TOTAL = 60  # everyone in the pipeline
+PER_DAY = 15  # scheduled on the run sheet each day; the rest are status "applied" with no slot
 
 HANDCRAFTED = [
     {"id": 1, "name": "Sparkle", "manager_name": "Sam Ortiz", "manager_email": "sam@sparkle-mgmt.example.test", "stage_id": 1, "set_start": "2026-12-11T20:00:00", "set_end": "2026-12-11T21:30:00", "status": "in_progress", "hospitality_cap": None},
@@ -49,14 +51,21 @@ def _overlaps(stage_id: int, start: datetime, end: datetime) -> bool:
 
 def generate() -> list[dict]:
     rng = random.Random(2026)
-    slots = []
+    by_day: dict[str, list[tuple[int, datetime, datetime]]] = {d: [] for d in DAYS}
     for day in DAYS:
         for stage_id in (1, 2, 3):
             for hhmm in SLOT_STARTS:
                 start = datetime.fromisoformat(f"{day}T{hhmm}:00")
                 end = start + timedelta(minutes=SET_MINUTES)
                 if not _overlaps(stage_id, start, end):
-                    slots.append((stage_id, start, end))
+                    by_day[day].append((stage_id, start, end))
+        rng.shuffle(by_day[day])
+
+    # Top each day up to PER_DAY, counting the hand-crafted sets.
+    booked = {d: sum(1 for a in HANDCRAFTED if a["set_start"].startswith(d)) for d in DAYS}
+    slots = []
+    for day in DAYS:
+        slots += by_day[day][: PER_DAY - booked[day]]
     rng.shuffle(slots)
 
     taken = {a["name"] for a in HANDCRAFTED}
@@ -67,20 +76,24 @@ def generate() -> list[dict]:
         if name in taken:
             continue
         taken.add(name)
-        stage_id, start, end = slots.pop()
         manager = rng.choice(MANAGERS)
         slug = name.lower().replace(" ", "")
-        artists.append({
+        artist = {
             "id": next_id,
             "name": name,
             "manager_name": manager,
             "manager_email": f"{manager.split()[0].lower()}@{slug}.example.test",
-            "stage_id": stage_id,
-            "set_start": start.isoformat(),
-            "set_end": end.isoformat(),
-            "status": "completed",
+            "stage_id": None,
+            "set_start": None,
+            "set_end": None,
+            "status": "applied",
             "hospitality_cap": None,
-        })
+        }
+        if slots:
+            stage_id, start, end = slots.pop()
+            artist.update(stage_id=stage_id, set_start=start.isoformat(), set_end=end.isoformat(),
+                          status="completed")
+        artists.append(artist)
         next_id += 1
     return artists
 
@@ -88,7 +101,8 @@ def generate() -> list[dict]:
 def main() -> None:
     artists = generate()
     OUT.write_text(json.dumps(artists, indent=1) + "\n", encoding="utf-8")
-    print(f"wrote {len(artists)} artists to {OUT}")
+    scheduled = sum(1 for a in artists if a["set_start"])
+    print(f"wrote {len(artists)} artists to {OUT}, {scheduled} scheduled, {len(artists) - scheduled} applied")
 
 
 if __name__ == "__main__":

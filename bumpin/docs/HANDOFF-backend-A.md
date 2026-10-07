@@ -1,6 +1,6 @@
 # Backend A handoff (artists)
 
-For Backend B. Branch: `backend-b/shared-modules`. Everything below is pushed and 53 tests pass on the fake LLM.
+For Backend B. Branch: `backend-b/shared-modules`. Everything below is pushed and 54 tests pass on the fake LLM.
 
 ## Quick start
 
@@ -37,7 +37,7 @@ The rider and help ticket flows have no HTTP route of their own yet, because `/i
 | Run sheet and xlsx | `artists/runsheet.py` |
 | Stand-ins for your modules | `artists/_compat.py` |
 
-Seed data: `data/seed/*.json` (festival, 3 stages, 16 inventory items, 60 artists). Rider PDFs in `data/docs/riders/`. Sample inbox emails for my riders in `data/demo/emails/`. Generators in `scripts/`.
+Seed data: `data/seed/*.json` (festival, 3 stages, 16 inventory items, 60 artists: 45 scheduled at 15 a day, 15 with status `applied` and no stage or set time). Rider PDFs in `data/docs/riders/`. Sample inbox emails for my riders in `data/demo/emails/`. Generators in `scripts/`.
 
 ## How to plug in
 

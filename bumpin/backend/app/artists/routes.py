@@ -30,16 +30,18 @@ def overview() -> dict:
         fest = db.row(conn.execute("SELECT * FROM festival LIMIT 1")) or {}
         count = lambda sql, *a: conn.execute(sql, a).fetchone()[0]  # noqa: E731
         artists_total = count("SELECT COUNT(*) FROM artists")
-        artists_ready = count("SELECT COUNT(*) FROM artists WHERE status = 'completed'")
+        artists_scheduled = count("SELECT COUNT(*) FROM artists WHERE set_start IS NOT NULL")
+        artists_ready = count("SELECT COUNT(*) FROM artists WHERE set_start IS NOT NULL AND status = 'completed'")
         vendors_total = count("SELECT COUNT(*) FROM vendors")
         vendors_ready = count("SELECT COUNT(*) FROM vendors WHERE status = 'completed'")
         return {
             "festival": fest,
             "suppliers": {
-                "artists": artists_total, "artists_ready": artists_ready,
+                "artists": artists_total, "artists_scheduled": artists_scheduled,
+                "artists_applied": artists_total - artists_scheduled, "artists_ready": artists_ready,
                 "vendors": vendors_total, "vendors_ready": vendors_ready,
             },
-            "readiness_pct": round(100 * (artists_ready + vendors_ready) / max(artists_total + vendors_total, 1)),
+            "readiness_pct": round(100 * (artists_ready + vendors_ready) / max(artists_scheduled + vendors_total, 1)),
             "documents": count("SELECT COUNT(*) FROM documents"),
             "needing_attention": count("SELECT COUNT(*) FROM tickets WHERE status IN ('open', 'needs_review')"),
             "expiring_soon": count(
@@ -57,7 +59,7 @@ def list_artists() -> list[dict]:
                       (SELECT t.id FROM tickets t WHERE t.owner_type = 'artist' AND t.owner_id = a.id
                        ORDER BY t.updated_at DESC LIMIT 1) AS latest_ticket_id
                FROM artists a LEFT JOIN stages s ON s.id = a.stage_id
-               ORDER BY a.set_start, a.name"""
+               ORDER BY a.set_start IS NULL, a.set_start, a.name"""
         ))
 
 
