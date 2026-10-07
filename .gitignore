@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# Local data
+bumpin/data/*.db
+bumpin/data/llm_cache/
+
+# Node
+node_modules/
