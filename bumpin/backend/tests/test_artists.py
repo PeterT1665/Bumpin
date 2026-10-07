@@ -383,3 +383,19 @@ def test_catering_notice_skips_vendor_rejected_after_proposal():
     ripple.approve_action(tid, 3, "ravi")
     to = outbox()[-1]["to_addr"]
     assert "pies@vendor.example.test" in to and "tacos@vendor.example.test" not in to
+
+
+def test_dismissing_vague_request_closes_the_help_ticket():
+    eid = receive("priya@halcyon-music.example.test", "Could we maybe go on a bit later? Cheers.", subject="Set time")
+    tid = ripple.create_help_ticket(eid, SimpleNamespace(confidence=0.5, entity_hint="Halcyon",
+                                                         is_major_change=True, label="help_or_change"))
+    ripple.HelpHandler().ignore_finding(tid, findings(tid)[0]["id"], "ravi")
+    with db.get_conn() as conn:
+        assert conn.execute("SELECT status FROM tickets WHERE id = ?", (tid,)).fetchone()[0] == "resolved"
+
+
+def test_ignoring_finding_keeps_ticket_open_while_steps_are_proposed():
+    tid = nova_ticket()
+    ripple.HelpHandler().ignore_finding(tid, findings(tid)[0]["id"], "ravi")
+    with db.get_conn() as conn:
+        assert conn.execute("SELECT status FROM tickets WHERE id = ?", (tid,)).fetchone()[0] == "needs_review"

@@ -187,7 +187,7 @@ def _review_ticket(email: dict, artist: dict, classification) -> int:
         insert_finding(conn, tid, Finding(
             kind="low_confidence", severity="warning",
             message=f"{artist['name']}'s team asked about their set, but did not say when or why. "
-                    f"BumpIn is not sure what they want, so no new slot is proposed.",
+                    f"Bumpin is not sure what they want, so no new slot is proposed.",
             suggestion="Reply and ask for a specific time, or ignore if it is not a real request.",
             doc_id=doc_id, quote=quote, page=1))
         conn.execute("UPDATE emails SET ticket_id = ? WHERE id = ?", (tid, email["id"]))
@@ -323,6 +323,18 @@ def edit_action(ticket_id: int, index: int, actor: str, edits: dict) -> Proposed
     return action
 
 
+def _close_if_settled(conn, ticket_id: int) -> None:
+    """A help ticket with nothing left open and no step still proposed is done.
+
+    Dismissing the vague "go on a bit later?" ticket leaves no finding and no
+    proposed step, and it should leave Ravi's list instead of sitting there."""
+    t, actions = _load_actions(conn, ticket_id)
+    still_open = conn.execute("SELECT COUNT(*) FROM findings WHERE ticket_id = ? AND status = 'open'",
+                              (ticket_id,)).fetchone()[0]
+    if not still_open and all(a.status != "proposed" for a in actions) and t["status"] not in ("rejected",):
+        conn.execute("UPDATE tickets SET status = 'resolved', updated_at = ? WHERE id = ?", (now(), ticket_id))
+
+
 class HelpHandler:
     def approve(self, ticket_id: int, actor: str, payload: dict | None) -> None:
         """Approve the whole ticket: run every remaining proposed action."""
@@ -345,11 +357,13 @@ class HelpHandler:
         decide(ticket_id, actor, "resolve_finding", {"finding_id": finding_id})
         with db.get_conn() as conn:
             conn.execute("UPDATE findings SET status = 'resolved' WHERE id = ? AND ticket_id = ?", (finding_id, ticket_id))
+            _close_if_settled(conn, ticket_id)
 
     def ignore_finding(self, ticket_id: int, finding_id: int, actor: str) -> None:
         decide(ticket_id, actor, "ignore_finding", {"finding_id": finding_id})
         with db.get_conn() as conn:
             conn.execute("UPDATE findings SET status = 'ignored' WHERE id = ? AND ticket_id = ?", (finding_id, ticket_id))
+            _close_if_settled(conn, ticket_id)
 
     def approve_action(self, ticket_id: int, index: int, actor: str) -> None:
         decide(ticket_id, actor, "approve_action", {"index": index})

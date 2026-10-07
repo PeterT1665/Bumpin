@@ -1,0 +1,236 @@
+/* On a laptop the screen is drawn inside a phone-sized frame, so it records as a
+   phone. On a real phone (narrow viewport) the frame falls away and it fills the
+   screen. Colours follow the rest of the app: pink asks for a decision, yellow is
+   worth a look, green is done. There is no red. */
+
+.stage {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background: var(--surface-backdrop);
+}
+
+.phone {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  overflow-y: auto;
+  border: 10px solid var(--surface-inverse);
+  border-radius: 48px;
+  background: var(--surface-app);
+  box-shadow: var(--shadow-panel);
+  scrollbar-width: none;
+}
+.phone::-webkit-scrollbar { display: none; }
+
+@media (max-width: 500px) {
+  .stage { padding: 0; place-items: stretch; }
+  .phone { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 36px 20px 14px;
+  background: var(--surface-app);
+}
+.brand { margin: 0; color: var(--ink-500); }
+.hello { margin: 2px 0 0; }
+.sub { margin: 2px 0 0; color: var(--ink-700); }
+
+.bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent-pink);
+  color: var(--ink-900);
+  line-height: 20px;
+}
+
+.notes {
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-panel);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+.note { margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--ink-line); }
+
+.banner {
+  position: sticky;
+  top: 112px;
+  z-index: 3;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: calc(100% - 32px);
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--r-panel);
+  background: var(--surface-inverse);
+  color: var(--surface-app);
+  text-align: left;
+  box-shadow: var(--shadow-panel);
+  animation: drop .35s ease-out;
+}
+.bannerTag {
+  padding: 2px 8px;
+  border-radius: var(--r-chip);
+  background: var(--accent-pink);
+  color: var(--ink-900);
+}
+
+.offline {
+  margin: 0 16px 12px;
+  padding: 10px 14px;
+  border-radius: var(--r-panel);
+  background: var(--accent-yellow-soft);
+}
+
+.list { display: grid; gap: 12px; padding: 0 16px 32px; }
+
+.card {
+  overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+.u_high { background: var(--accent-pink); }
+.u_medium { background: var(--accent-yellow-soft); }
+.handled { background: var(--accent-green-soft); }
+.fresh { animation: drop .4s ease-out, glow 1.6s ease-in-out 2; }
+
+.cardHead {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  padding: 2px 8px;
+  border-radius: var(--r-chip);
+  background: rgba(255, 255, 255, 0.7);
+}
+.chipNew { background: var(--surface-inverse); color: var(--surface-app); }
+.time { margin-left: auto; color: var(--ink-700); }
+.title { color: var(--ink-900); }
+.summary { color: var(--ink-700); }
+.snippet {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-left: 10px;
+  border-left: 2px solid rgba(26, 22, 20, 0.25);
+  color: var(--ink-700);
+  font-style: italic;
+}
+
+.detail {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  border-top: 1px solid rgba(26, 22, 20, 0.08);
+  background: var(--surface-card);
+}
+.block { display: grid; gap: 10px; }
+.blockTitle { margin: 0; color: var(--ink-500); }
+
+.step {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--r-tile);
+  background: var(--surface-sunken);
+}
+.step p { margin: 0; }
+.conflict { background: var(--accent-pink-soft); }
+.warning { background: var(--accent-yellow-soft); }
+.kind { color: var(--ink-700); }
+.muted { color: var(--ink-700); }
+.done { margin: 0; color: var(--accent-green); filter: brightness(.7); }
+
+.row { display: flex; gap: 8px; margin-top: 4px; }
+.btn {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--ink-300);
+  border-radius: 22px;
+  background: var(--surface-card);
+  color: var(--ink-900);
+}
+.btnFill { border-color: var(--surface-inverse); background: var(--surface-inverse); color: var(--surface-app); }
+.btn:disabled { opacity: .5; cursor: default; }
+.wide { width: 100%; }
+
+.draft {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-tile);
+  background: var(--surface-sunken);
+}
+.draftHead { display: grid; gap: 2px; padding: 0; border: 0; background: none; text-align: left; }
+.body {
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--r-chip);
+  background: var(--surface-card);
+  white-space: pre-wrap;
+  font-family: var(--font-sans);
+}
+
+.reject { display: grid; gap: 8px; }
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ink-300);
+  border-radius: var(--r-chip);
+  background: var(--surface-card);
+  resize: vertical;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-chip);
+  background: var(--accent-pink-soft);
+}
+.link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-700);
+  text-decoration: underline;
+}
+
+.empty { padding: 48px 8px; text-align: center; color: var(--ink-700); }
+
+@keyframes drop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes glow { 50% { box-shadow: 0 0 0 4px var(--surface-inverse); } }
