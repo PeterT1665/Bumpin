@@ -33,8 +33,19 @@
 /* 88:2 Board: HORIZONTAL gap 22. */
 .board { display: flex; align-items: flex-start; gap: 22px; }
 
-/* 88:3 Column: 240 fixed, VERTICAL gap 14. */
-.column { flex: 0 0 240px; width: 240px; display: flex; flex-direction: column; gap: 14px; }
+/* 88:3 Column: 240 in the mock, VERTICAL gap 14.
+   Grown to fill rather than pinned at 240. The mock is drawn at one width with
+   one set of columns; here the count follows the stages plus however many the
+   operator has added, so a fixed 240 left the board stopping short of the right
+   margin — the last column's rule ended 150px inside the stat strip above it,
+   which read as the board being cut off rather than ending. 240 stays as the
+   floor, so a board with enough columns to need scrolling still gets cards the
+   drawn width rather than squeezing them. */
+.column {
+  flex: 1 1 240px;
+  min-width: 240px;
+  display: flex; flex-direction: column; gap: 14px;
+}
 
 /* 88:4 Rule: 240x3, r2, #1a1614 — the same ink on every column. */
 .rule { height: 3px; border-radius: 2px; background: var(--ink-900); }
