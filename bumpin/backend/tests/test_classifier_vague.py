@@ -54,3 +54,17 @@ def test_is_vague_change_cases():
     assert not is_vague_change(CONCRETE)
     assert not is_vague_change(CANCELLED)
     assert not is_vague_change("Please send the site map for load-in.")
+
+
+def test_vague_cap_also_applies_to_jev(monkeypatch):
+    from backend.app.shared import classifier, jev
+
+    monkeypatch.setattr(jev, "enabled", lambda: True)
+    monkeypatch.setattr(jev, "evaluate", lambda text: {
+        "label": {"choice": "help_or_change", "confidence": 0.97, "probabilities": {"help_or_change": 0.97}},
+        "sender_role": {"choice": "artist"},
+        "is_major_change": {"noul": 0.8},
+    })
+    result = classifier.classify(VAGUE)
+    assert result.label == "help_or_change" and result.confidence <= VAGUE_CONFIDENCE_CAP
+    assert classifier.classify(CANCELLED).confidence == pytest.approx(0.97)

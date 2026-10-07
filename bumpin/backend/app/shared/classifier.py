@@ -129,10 +129,20 @@ def classify(text: str) -> Classification:
     """Jev when a key is set, else the two-pass LLM check, else keyword rules."""
     if jev.enabled():
         try:
-            return _jev_classify(text)
+            return _cap_vague(_jev_classify(text), text)
         except Exception:
             pass  # network, auth, rate limit or an unexpected reply: fall through
     return _classify_llm(text)
+
+
+def _cap_vague(cls: Classification, text: str) -> Classification:
+    """Same code rule for every classifier: a vague change request is never auto-filed."""
+    if cls.label == "help_or_change" and is_vague_change(text) and cls.confidence > VAGUE_CONFIDENCE_CAP:
+        return cls.model_copy(update={
+            "confidence": VAGUE_CONFIDENCE_CAP,
+            "reason": f"Vague change request with no concrete time, needs a human. {cls.reason}",
+        })
+    return cls
 
 
 def _classify_llm(text: str) -> Classification:
