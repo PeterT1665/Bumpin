@@ -119,6 +119,20 @@ curl -X POST http://localhost:8000/api/inbox/receive \
 
 The other emails in `data/demo/emails/` can be sent the same way.
 
+**7. Send it a real email.** BumpIn can watch a real mailbox. Every new email sent to it, with its PDF or photo attachments, is classified, routed and turned into a ticket within about 15 seconds, the same as the demo emails above.
+
+1. Make a mailbox for it. For Gmail: create a new account, turn on 2-Step Verification, then create an App Password (Google Account, Security, App passwords).
+2. Add it to `bumpin/.env` and restart the backend:
+
+   ```
+   IMAP_USER=your.bumpin.mailbox@gmail.com
+   IMAP_PASSWORD=the 16-character app password
+   ```
+
+3. From any address, email it as an artist's manager or a vendor, for example a subject of "Sparkle rider" with `bumpin/data/docs/riders/sparkle_rider.pdf` attached, or "Nova Lane's flight from Sydney has been cancelled, we land at 9:40pm". The ticket appears on the laptop app and the phone.
+
+Your own address is not in BumpIn's address book, so it works out who the email is about from the artist or vendor name in it. An email that names nobody it knows goes to the review list. http://localhost:8000/api/inbox/mailbox shows when it last checked and any connection error. Replies are drafted as usual and still never sent for real.
+
 ---
 
 ## How the AI is used, and where people stay in control
@@ -152,7 +166,7 @@ Restart the backend. With `LLM_CACHE=on` every AI answer is saved under `data/ll
 - **The Dj Nova ticket is staged.** Its handwritten page is real, but the reader cannot place every handwritten line reliably, so that ticket's highlight boxes and wording are set by hand in the app. Sparkle's photographed rider is read for real by OCR.
 - **No email is really sent.** `EMAIL_MODE=mock` marks a draft as sent and nothing leaves the machine.
 - **Single user.** There is no login. The app acts as Ravi.
-- **Not built yet:** a real inbox connection (emails come in through the API, as above), approving a whole rider from the laptop view (it works on the phone view), a run sheet download button, handwriting highlights, and vendors who write in other languages.
+- **Not built yet:** approving a whole rider from the laptop view (it works on the phone view), a run sheet download button, handwriting highlights, and vendors who write in other languages.
 
 ---
 

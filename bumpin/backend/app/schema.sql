@@ -173,3 +173,10 @@ CREATE TABLE IF NOT EXISTS memory (
     summary TEXT,
     uploaded_at TEXT NOT NULL
 );
+
+-- Message-IDs already taken from the real mailbox, so an email is never filed twice.
+CREATE TABLE IF NOT EXISTS mailbox_seen (
+    message_id TEXT PRIMARY KEY,
+    email_id INTEGER,
+    at TEXT
+);

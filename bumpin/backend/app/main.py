@@ -12,12 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app import db
 from backend.app.artists.routes import router as artists_router
+from backend.app.shared import mailbox
 from backend.app.shared.router_registry import ROUTERS
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     db.ensure_ready()
+    mailbox.start()  # polls a real inbox when IMAP_USER and IMAP_PASSWORD are set
     yield
 
 

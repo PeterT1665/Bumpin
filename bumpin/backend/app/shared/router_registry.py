@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from backend.app.shared.inbox import router as inbox_router
+from backend.app.shared.mailbox import router as mailbox_router
 from backend.app.shared.notifications import router as notifications_router
 from backend.app.shared.outbox import router as outbox_router
 from backend.app.shared.phone import router as phone_router
@@ -17,4 +18,5 @@ from backend.app.vendors.routes import router as vendors_router
 
 ROUTERS: list[APIRouter] = [
     notifications_router, outbox_router, tickets_router, inbox_router, vendors_router, phone_router,
+    mailbox_router,
 ]

@@ -7,6 +7,7 @@ decides (dates, bands, critical fields) is plain code.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 
@@ -49,6 +50,32 @@ def sender_role(from_addr: str) -> tuple[str, dict | None]:
         v = db.row(conn.execute("SELECT * FROM vendors WHERE lower(contact_email) = lower(?)", (from_addr,)))
         if v:
             return "vendor", v
+    return "unknown", None
+
+
+def _norm(name: str) -> str:
+    return " ".join(name.lower().replace("&", "and").split())
+
+
+def sender_by_name(hint: str | None, text: str) -> tuple[str, dict | None]:
+    """For a sender not in the address book: the artist or vendor the email is about.
+
+    The name the classifier picked out first, then any known name written in the
+    subject or body, longest first so "Marlow Catering" beats "Marlow". Plain code:
+    no name means no match, and the email goes to review."""
+    with db.get_conn() as conn:
+        people = [("artist", a) for a in db.rows(conn.execute("SELECT * FROM artists"))] + \
+                 [("vendor", v) for v in db.rows(conn.execute("SELECT * FROM vendors"))]
+    if hint:
+        for role, p in people:
+            if _norm(p["name"]) == _norm(hint):
+                return role, p
+    body = f" {_norm(text)} "
+    hits = [(len(p["name"]), role, p) for role, p in people
+            if re.search(rf"(?<![a-z0-9]){re.escape(_norm(p['name']))}(?![a-z0-9])", body)]
+    if hits:
+        _, role, p = max(hits, key=lambda h: h[0])
+        return role, p
     return "unknown", None
 
 
@@ -153,7 +180,12 @@ def receive(msg: InboundEmail) -> dict:
     role, owner = sender_role(msg.from_)
 
     cls = classify(_classification_text(msg, docs))
-    # The address book beats the model on who the sender is.
+    # The address book beats the model on who the sender is. A sender it does not
+    # know (a real mailbox, a forwarded email) is placed by the name in the email.
+    if role == "unknown":
+        role, owner = sender_by_name(cls.entity_hint, f"{msg.subject}\n{msg.body}")
+        if owner:
+            cls = cls.model_copy(update={"entity_hint": owner["name"]})
     if role != "unknown":
         cls = cls.model_copy(update={"sender_role": role})
     if owner and not cls.entity_hint:

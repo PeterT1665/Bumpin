@@ -38,6 +38,7 @@ TABLES = [
     "audit_log",
     "notifications",
     "memory",
+    "mailbox_seen",
 ]
 
 
