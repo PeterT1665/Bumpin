@@ -15,6 +15,10 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+# Schema first, so the snapshot is taken from a database that is at least as
+# new as the code. demo-reset replays this too, for the tables a later schema
+# adds after the snapshot was frozen.
+sqlite3 data/bumpin.db < backend/app/schema.sql
 sqlite3 data/bumpin.db ".backup data/demo_baseline.db"
 sqlite3 data/demo_baseline.db "PRAGMA integrity_check;" | grep -qx ok \
   || { echo "The snapshot did not verify. Baseline NOT trustworthy." >&2; exit 1; }
