@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { TopBar } from '@/components/AppShell'
 import { Button, FilterPill, Row, Stat, StatusPill, Table } from '@/components/primitives'
 import { matches, useSearch } from '@/components/search'
-import { ApiError, api } from '@/api/client'
+import { ApiError, api, urls } from '@/api/client'
 import type { NewSet, RunsheetRow } from '@/api/types'
 import {
   AddPanel, Cell, ChipCell, ControlsRow, Field, Name, Plain, Quiet, RemoveCell,
@@ -178,6 +178,10 @@ export function RunSheet() {
               onClick={() => (open ? setOpen(false) : openForm())}
             >
               {open ? 'Close' : 'Add set'}
+            </Button>
+            {/* The whole sheet, every day, as the xlsx crews print and pin up. */}
+            <Button variant="outline" onClick={() => { window.location.href = urls.runsheetXlsx }}>
+              Download .xlsx
             </Button>
           </>
         }

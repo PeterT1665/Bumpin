@@ -93,7 +93,7 @@ Reset the demo data between run-throughs (step 3).
 
 **2. A certificate that expires too early.** Open *Vendors* and pick **Marlow Catering**. Hover "Valid until: 5 December 2026". The festival ends on 13 December. Click **Reject vendor** and give a reason.
 
-**3. A change that ripples.** In *Vendors*, open **Harbour Coffee Co**. They want to move their load-in from 07:00 to 05:30. Hover the highlighted sentence and approve the move. Then open *Run sheet*: the 05:30 row is already there.
+**3. A change that ripples.** In *Vendors*, open **Harbour Coffee Co**. They want to move their load-in from 07:00 to 05:30. Hover the highlighted sentence and approve the move. Then open *Run sheet*: the 05:30 row is already there. **Download .xlsx** gives the whole sheet as a spreadsheet for the crews.
 
 **4. 4pm Saturday, on Ravi's phone.** Open http://localhost:5173/phone (or the phone address from step 5 on a real phone), then send the headliner's email in from a terminal on the laptop:
 
@@ -166,7 +166,7 @@ Restart the backend. With `LLM_CACHE=on` every AI answer is saved under `data/ll
 - **The Dj Nova ticket is staged.** Its handwritten page is real, but the reader cannot place every handwritten line reliably, so that ticket's highlight boxes and wording are set by hand in the app. Sparkle's photographed rider is read for real by OCR.
 - **No email is really sent.** `EMAIL_MODE=mock` marks a draft as sent and nothing leaves the machine.
 - **Single user.** There is no login. The app acts as Ravi.
-- **Not built yet:** approving a whole rider from the laptop view (it works on the phone view), a run sheet download button, handwriting highlights, and vendors who write in other languages.
+- **Not built yet:** approving a whole rider from the laptop view (it works on the phone view), handwriting highlights, and vendors who write in other languages.
 
 ---
 
