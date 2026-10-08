@@ -77,9 +77,12 @@
 }
 
 /* 159:449 Column — 216 wide, VERTICAL gap 14 */
+/* SCREENSHOT BRANCH: grown to fill rather than pinned at the drawn 216, so
+   the five columns end flush with the stat strip above them instead of
+   stopping 150px short. 216 stays the floor. */
 .column {
-  flex: 0 0 216px;
-  width: 216px;
+  flex: 1 1 216px;
+  min-width: 216px;
   display: flex;
   flex-direction: column;
   gap: 14px;

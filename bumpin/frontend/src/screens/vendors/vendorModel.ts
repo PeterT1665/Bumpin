@@ -76,9 +76,13 @@ export const CERT_GROUPS: CertGroup[] = [
   { id: 'insurance', label: 'Public liability', kinds: ['insurance'], noun: 'Public liability' },
   { id: 'gas', label: 'Gas & electrical', kinds: ['gas'], noun: 'Gas compliance' },
   { id: 'permit', label: 'Council permit', kinds: ['permit'], noun: 'Council permit' },
-  /* The design draws a fifth "Liquor licence" column, but no vendor type
-     requires a liquor document and `kinds: []` means nothing can ever land in
-     it — it was a permanently empty column pushing the board off screen. */
+  /* The design's fifth column. It was dropped because `data/rules/
+     vendor_eligibility.yaml` asks no vendor for a liquor document, so nothing
+     could ever land in it and it was a permanently empty column pushing the
+     board off screen. SCREENSHOT BRANCH: scripts/screenshot_vendors.py files
+     liquor documents for the bars, so the column has cards and the board is
+     the five the design draws. */
+  { id: 'liquor', label: 'Liquor licence', kinds: ['liquor'], noun: 'Liquor licence' },
 ]
 
 /** Kinds the four columns between them can hold. Anything outside this set

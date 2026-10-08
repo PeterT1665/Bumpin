@@ -40,10 +40,13 @@
    margin — the last column's rule ended 150px inside the stat strip above it,
    which read as the board being cut off rather than ending. 240 stays as the
    floor, so a board with enough columns to need scrolling still gets cards the
-   drawn width rather than squeezing them. */
+   drawn width rather than squeezing them.
+   SCREENSHOT BRANCH: the floor is 200 rather than 240, because five stages in
+   a 1176 row come out at 217 each. 240 would push the fifth off the edge, and
+   the fifth column is the point of this branch. */
 .column {
-  flex: 1 1 240px;
-  min-width: 240px;
+  flex: 1 1 200px;
+  min-width: 200px;
   display: flex; flex-direction: column; gap: 14px;
 }
 

@@ -142,3 +142,18 @@ Worth knowing before someone asks a pointed question.
 | A highlight is faint and does nothing | Its finding has been resolved or ignored. Settled highlights stay on the page greyed out rather than vanishing. `./scripts/demo-reset`. |
 | The run sheet shows a 05:30 Harbour row | Somebody approved the load-in move. `./scripts/demo-reset`. |
 | A document pane is a black rectangle | Chrome is still rendering the PDF. Give it a second. |
+
+## The `screenshot` branch
+
+`screenshot` is a copy of this branch with the two boards packed for
+photographs, and it is not the demo. Rider needs carries five stages instead of
+three and most tickets three to five conflicts; Vendor progress carries six
+traders and the liquor column the design draws. Both boards hide their "add a
+column" affordance so the five columns of content fill the row exactly, and
+both relax their column floor to fit. `scripts/screenshot_state.py` and
+`scripts/screenshot_vendors.py` build the data, and that branch keeps its own
+`data/demo_baseline.db`.
+
+Do not demo from it. Its tickets are padded with conflicts nobody wrote an
+email about, and several of its findings have no highlight on any document, so
+the ticket detail behind a card is thinner than the card suggests.

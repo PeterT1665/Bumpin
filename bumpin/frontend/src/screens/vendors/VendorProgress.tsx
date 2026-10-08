@@ -131,13 +131,11 @@ export function VendorProgress() {
                 )}
               </section>
             ))}
-            {/* 159:407 Column — Add: rule plus a right-aligned glyph, 98 wide */}
-            <div className={`${s.column} ${s.columnAdd}`} aria-hidden>
-              <div className={s.columnRule} />
-              <div className={`${s.columnHead} ${s.columnHeadAdd}`}>
-                <span className={s.plus} />
-              </div>
-            </div>
+            {/* 159:407 Column — Add: rule plus a right-aligned glyph, 98 wide.
+                SCREENSHOT BRANCH: hidden, the same way the rider board's is.
+                With the liquor column back there are five columns of cards,
+                which is the whole row; a sixth track for an affordance would
+                push the fifth half off the edge. */}
           </div>
 
           {/* `board.total`, not the filtered count: "no paperwork yet" is a

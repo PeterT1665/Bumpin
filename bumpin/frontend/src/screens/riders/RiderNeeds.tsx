@@ -110,6 +110,9 @@ function TicketCard({ ticket, stageless, conflicts, title }: {
   )
 }
 
+/** SCREENSHOT BRANCH ONLY. See the note at the add column's markup. */
+const SHOW_ADD_COLUMN = false
+
 type Column = { key: string; name: string; tickets: RiderTicket[] }
 
 export function RiderNeeds() {
@@ -289,7 +292,13 @@ export function RiderNeeds() {
             </section>
           ))}
 
-          {/* 115:26 collapsed, 116:2 while being named. */}
+          {/* 115:26 collapsed, 116:2 while being named.
+              SCREENSHOT BRANCH: hidden. Five stages plus this makes six tracks
+              in a row 1176 wide, which puts every card under 180 and wraps
+              "Over hospitality budget" onto three lines. The five columns of
+              content are the photograph; an affordance for a sixth is not.
+              Delete this constant to get it back. */}
+          {SHOW_ADD_COLUMN && (
           <section className={s.column}>
             <div className={s.rule} aria-hidden />
             <div className={`${s.colHead} ${draftColumn === null ? s.colHeadAdd : ''}`}>
@@ -311,6 +320,7 @@ export function RiderNeeds() {
               )}
             </div>
           </section>
+          )}
         </div>
       )}
     </>
