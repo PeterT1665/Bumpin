@@ -64,7 +64,8 @@ export const NAV = [
   { to: '/upload', label: 'Upload', Icon: Upload, end: false },
 ] as const
 
-export function NavRail() {
+/** `badges` counts tickets that arrived while the app was open, by section. */
+export function NavRail({ badges = {} }: { badges?: Partial<Record<string, number>> }) {
   return (
     <nav className={styles.rail} aria-label="Sections">
       <div className={styles.mark} aria-hidden>
@@ -91,7 +92,8 @@ export function NavRail() {
             >
               <span className={styles.pill} aria-hidden />
               <span className={styles.glyph}><Icon /></span>
-              <span className={styles.srOnly}>{label}</span>
+              {badges[to] ? <span className={styles.badge}>{badges[to]}</span> : null}
+              <span className={styles.srOnly}>{badges[to] ? `${label}, ${badges[to]} new` : label}</span>
             </NavLink>
           </li>
         ))}

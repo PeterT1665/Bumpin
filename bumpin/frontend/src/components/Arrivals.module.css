@@ -1,0 +1,55 @@
+/* Dark toast, top centre of the window, the same voice as the phone's "New" banner. */
+.toast {
+  position: fixed;
+  top: calc(var(--window-inset) + 20px);
+  left: calc(50% + var(--rail-w) / 2);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(560px, calc(100vw - 2 * var(--window-inset) - var(--rail-w) - 48px));
+  padding: 14px 16px;
+  border-radius: var(--r-panel);
+  background: var(--surface-inverse);
+  color: var(--surface-app);
+  box-shadow: var(--shadow-panel);
+  animation: drop .35s ease-out;
+}
+
+.tag {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: var(--r-chip);
+  background: var(--accent-pink);
+  color: var(--ink-900);
+}
+
+.text { min-width: 0; flex: 1; }
+.who, .what { margin: 0; }
+.what {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-300);
+}
+
+.open {
+  flex: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  background: var(--surface-app);
+  color: var(--ink-900);
+  text-decoration: none;
+}
+
+.close {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--ink-300);
+  font-size: 20px;
+  line-height: 1;
+}
+
+@keyframes drop { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translate(-50%, 0); } }

@@ -49,6 +49,25 @@
 
 .glyph { position: relative; display: grid; place-items: center; }
 
+/* New arrivals in this section, cleared when the section is opened. */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: 2px solid var(--surface-inverse);
+  border-radius: 10px;
+  background: var(--accent-pink);
+  color: var(--ink-900);
+  font: 600 11px/16px var(--font-sans);
+  text-align: center;
+  animation: pop .3s ease-out;
+}
+
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
 .avatar {
   margin-top: auto;
   width: 36px;

@@ -19,7 +19,7 @@ router = APIRouter(tags=["phone"])
 REASON_RANK = {"major_change": 0, "needs_review": 1, "pending_approval": 2}
 LOW_CONFIDENCE = 0.60
 SEVERITY_RANK = {"conflict": 0, "warning": 1, "info": 2}
-_PREFIX = re.compile(r"^\s*((re|fwd?)\s*:\s*|urgent\s*:\s*)+", re.I)
+_PREFIX = re.compile(r"^\s*((re|fwd?)\s*:\s*|urgent\s*:\s*|subject\s*:\s*)+", re.I)
 
 
 def _headline(subject: str | None, owner_name: str | None, fallback: str) -> str:

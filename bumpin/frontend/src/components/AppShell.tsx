@@ -1,16 +1,19 @@
 import type { ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 import { NavRail } from './NavRail'
+import { ArrivalToast, useArrivals } from './Arrivals'
 import { SearchProvider, useSearch } from './search'
 import styles from './AppShell.module.css'
 
 /** Brown backdrop, cream window inset 56px, rail on the left, canvas on the
  *  right. Identical on every screen — see the Figma frames. */
 export function AppShell() {
+  const { badges, toast, dismiss } = useArrivals()
   return (
     <div className={styles.backdrop}>
+      {toast && <ArrivalToast ticket={toast} onClose={dismiss} />}
       <div className={styles.window}>
-        <NavRail />
+        <NavRail badges={badges} />
         <main className={styles.canvas}>
           {/* Inside the window so every screen's top bar shares one query. */}
           <SearchProvider>
