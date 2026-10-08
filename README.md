@@ -57,7 +57,31 @@ No curl? Open http://localhost:8000/docs, find `POST /api/demo/reset` and press 
 ### 4. Open it
 
 - **Laptop app:** http://localhost:5173
-- **Ravi's phone:** http://localhost:5173/phone (drawn as a phone on a laptop screen, full screen on a real phone)
+- **Ravi's phone:** http://localhost:5173/phone (on a laptop screen it is drawn inside a phone frame)
+
+### 5. Optional: open Ravi's view on a real phone
+
+There is no hosted version, and a phone cannot run BumpIn itself. Instead, the laptop that runs it serves the page to your phone over Wi-Fi. `localhost` only means "this computer", so on the phone you use the laptop's network address instead.
+
+1. Stop the app in terminal 2 (Ctrl+C) and start it again so other devices can reach it:
+
+   ```bash
+   cd frontend && npm run dev -- --host
+   ```
+
+   The backend in terminal 1 stays as it is. The phone only talks to the app, which passes requests on to the backend.
+
+2. Find the laptop's address. Vite prints it as the `Network:` line, for example `http://192.168.1.23:5173/`. You can also look it up:
+   - macOS: `ipconfig getifaddr en0`
+   - Windows: `ipconfig`, then the "IPv4 Address" line
+   - Linux: `hostname -I`
+
+3. Connect the phone to the **same Wi-Fi** as the laptop and open `http://<that address>:5173/phone`, for example `http://192.168.1.23:5173/phone`. It fills the screen and refreshes on its own every few seconds.
+
+If the page does not load:
+- **Firewall prompt:** if the laptop asks whether to allow incoming connections for Node, allow it.
+- **Public or university Wi-Fi:** these often block devices from reaching each other. Turn on your phone's hotspot, connect the laptop to it, and use the address the laptop gets there.
+- **No phone handy:** in Chrome on the laptop, open http://localhost:5173/phone, press F12 and turn on the device toolbar (the phone and tablet icon) to see the full-screen phone layout.
 
 ---
 
@@ -71,7 +95,7 @@ Reset the demo data between run-throughs (step 3).
 
 **3. A change that ripples.** In *Vendors*, open **Harbour Coffee Co**. They want to move their load-in from 07:00 to 05:30. Hover the highlighted sentence and approve the move. Then open *Run sheet*: the 05:30 row is already there.
 
-**4. 4pm Saturday, on Ravi's phone.** Open http://localhost:5173/phone, then send the headliner's email in from a terminal:
+**4. 4pm Saturday, on Ravi's phone.** Open http://localhost:5173/phone (or the phone address from step 5 on a real phone), then send the headliner's email in from a terminal on the laptop:
 
 ```bash
 curl -X POST http://localhost:8000/api/inbox/receive \
