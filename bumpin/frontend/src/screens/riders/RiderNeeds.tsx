@@ -127,10 +127,14 @@ export function RiderNeeds() {
 
   const load = useCallback(async () => {
     try {
-      const [t, a] = await Promise.all([
+      const [riders, changes, a] = await Promise.all([
         api.tickets({ type: 'rider_needs' }) as Promise<RiderTicket[]>,
+        /* An artist's change request (a cancelled flight, a set to move) is about
+           that artist too, so it sits on this board beside their rider. */
+        api.tickets({ type: 'help' }) as Promise<RiderTicket[]>,
         api.artists(),
       ])
+      const t = [...riders, ...changes.filter((c) => c.owner_type === 'artist')]
       setTickets(t)
       setArtists(a)
       setError(null)
