@@ -42,7 +42,7 @@ _started = False
 
 def _cfg() -> tuple[str, str, str, int]:
     return (os.getenv("IMAP_HOST") or "imap.gmail.com", os.getenv("IMAP_USER") or "",
-            os.getenv("IMAP_PASSWORD") or "", int(os.getenv("IMAP_POLL_SECONDS") or 15))
+            (os.getenv("IMAP_PASSWORD") or "").replace(" ", ""), int(os.getenv("IMAP_POLL_SECONDS") or 15))
 
 
 def enabled() -> bool:
