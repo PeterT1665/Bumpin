@@ -110,42 +110,54 @@ def handle(raw: bytes) -> dict | None:
 
 # --- the mailbox ----------------------------------------------------------------------------------
 
-# Where this copy of the app started reading. Every running copy keeps its own, so
-# several laptops on one mailbox each get every new email. Nothing is marked read in
-# the mailbox, and a demo reset does not re-import mail already seen.
-_watermark: int | None = None
+# Where this copy of the app started reading, per folder. Every running copy keeps
+# its own, so several laptops on one mailbox each get every new email. Nothing is
+# marked read in the mailbox, and a demo reset does not re-import mail already seen.
+_watermarks: dict[str, int] = {}
+
+# Spam too: repeated test emails from one address are exactly what Gmail flags, and a
+# real vendor's certificate in Spam is still a certificate. A folder the provider does
+# not have is skipped.
+DEFAULT_FOLDERS = "INBOX,[Gmail]/Spam"
 
 
-def _uidnext(box) -> int:
-    _, data = box.status("INBOX", "(UIDNEXT)")
+def _folders() -> list[str]:
+    return [f.strip() for f in (os.getenv("IMAP_FOLDERS") or DEFAULT_FOLDERS).split(",") if f.strip()]
+
+
+def _uidnext(box, folder: str) -> int:
+    _, data = box.status(f'"{folder}"', "(UIDNEXT)")
     m = re.search(rb"UIDNEXT (\d+)", data[0] or b"")
     return int(m.group(1)) if m else 1
 
 
 def check_once() -> list[dict]:
     """Run every email that arrived since this app started through the pipeline."""
-    global _watermark
     host, user, password, _ = _cfg()
     results = []
     with _lock:
         box = imaplib.IMAP4_SSL(host)
         try:
             box.login(user, password)
-            box.select("INBOX", readonly=True)
-            if _watermark is None:
-                _watermark = _uidnext(box) - 1  # start from now: older mail is not ours to file
-                return []
-            _, data = box.uid("search", None, f"UID {_watermark + 1}:*")
-            # "N:*" always returns the newest message, even when it is older than N.
-            uids = sorted(int(u) for u in (data[0] or b"").split() if int(u) > _watermark)
-            for uid in uids:
-                _, parts = box.uid("fetch", str(uid), "(BODY.PEEK[])")
-                raw = next((p[1] for p in parts if isinstance(p, tuple)), b"")
-                # Move past it either way, so one email that fails is not retried forever.
-                _watermark = uid
-                r = handle(raw)
-                if r:
-                    results.append(r)
+            for folder in _folders():
+                typ, _ = box.select(f'"{folder}"', readonly=True)
+                if typ != "OK":
+                    continue
+                if folder not in _watermarks:
+                    _watermarks[folder] = _uidnext(box, folder) - 1  # start from now
+                    continue
+                mark = _watermarks[folder]
+                _, data = box.uid("search", None, f"UID {mark + 1}:*")
+                # "N:*" always returns the newest message, even when it is older than N.
+                uids = sorted(int(u) for u in (data[0] or b"").split() if int(u) > mark)
+                for uid in uids:
+                    _, parts = box.uid("fetch", str(uid), "(BODY.PEEK[])")
+                    raw = next((p[1] for p in parts if isinstance(p, tuple)), b"")
+                    # Move past it either way, so one email that fails is not retried forever.
+                    _watermarks[folder] = uid
+                    r = handle(raw)
+                    if r:
+                        results.append(r)
         finally:
             try:
                 box.logout()

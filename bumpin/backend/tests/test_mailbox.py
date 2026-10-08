@@ -113,7 +113,9 @@ def test_every_running_copy_gets_new_mail_and_nothing_is_marked_read(monkeypatch
         uidnext = 50
         def __init__(self, host): calls.append(("connect", host))
         def login(self, u, p): calls.append(("login", u))
-        def select(self, box, readonly=False): calls.append(("select", box, readonly))
+        def select(self, box, readonly=False):
+            calls.append(("select", box, readonly))
+            return ("OK", [b"1"]) if box == '"INBOX"' else ("NO", [b"no such folder"])
         def status(self, box, what): return "OK", [f"INBOX (UIDNEXT {FakeIMAP.uidnext})".encode()]
         def uid(self, cmd, *args):
             calls.append(("uid", cmd) + args)
@@ -124,16 +126,16 @@ def test_every_running_copy_gets_new_mail_and_nothing_is_marked_read(monkeypatch
         def logout(self): calls.append(("logout",))
 
     monkeypatch.setattr(mailbox.imaplib, "IMAP4_SSL", FakeIMAP)
-    monkeypatch.setattr(mailbox, "_watermark", None)
+    monkeypatch.setattr(mailbox, "_watermarks", {})
     assert mailbox.check_once() == []          # first check only notes where the inbox is
     assert mailbox.check_once() == []          # nothing new: the old message 49 is skipped
     FakeIMAP.uidnext = 51                       # message 50 arrives
     results = mailbox.check_once()
     assert len(results) == 1 and results[0]["ticket_type"] == "rider_needs"
     assert not [c for c in calls if c[0] == "store"]
-    assert ("select", "INBOX", True) in calls
+    assert ("select", '"INBOX"', True) in calls
 
     # A second laptop on the same mailbox, started before message 50, files it too.
     db.reset()
-    monkeypatch.setattr(mailbox, "_watermark", 49)
+    monkeypatch.setattr(mailbox, "_watermarks", {"INBOX": 49})
     assert len(mailbox.check_once()) == 1
