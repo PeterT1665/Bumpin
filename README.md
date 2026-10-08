@@ -17,7 +17,7 @@ All people, companies and data in this project are made up.
 
 ## Try it (about 10 minutes)
 
-You need **Python 3.11 or newer** and **Node.js 18 or newer**. No API key is needed: without one, BumpIn uses rule-based fallbacks and every screen still works.
+You need **Python 3.10 or newer** and **Node.js 18 or newer**. No API key is needed: without one, BumpIn uses rule-based fallbacks and every screen still works.
 
 ### 1. Install
 

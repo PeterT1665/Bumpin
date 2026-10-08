@@ -6,7 +6,7 @@
 
 ## Run the backend
 
-Needs Python 3.11 or newer. From this `bumpin/` folder:
+Needs Python 3.10 or newer. From this `bumpin/` folder:
 
 ```bash
 python3 -m venv .venv
