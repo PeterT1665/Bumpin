@@ -123,18 +123,29 @@ def _review_ticket(email_id: int, msg: InboundEmail, role: str, owner: dict | No
     owner_type = role if role in ("artist", "vendor") else None
     who = owner["name"] if owner else msg.from_
     snippet = " ".join(msg.body.split())[:200]
+    # Two different reasons land here: it is clear what the email is but not who it
+    # is about, or it is not clear what the email is at all. Say which.
+    kind = {"rider": "a rider", "vendor_doc": "a vendor document", "help_or_change": "a change request"}
+    unknown_who = owner is None and cls.label in kind and cls.confidence >= TOP_OF_LIST
+    if unknown_who:
+        summary = f"{who}: {kind[cls.label]} about someone not on file."
+        message = (f"This reads as {kind[cls.label]}, but it does not name an artist or vendor Bumpin "
+                   f"knows, and the sender is not in the address book. {cls.reason}")
+        suggestion = "Check who it is about. If it is a new act or vendor, add them first, or reply to ask."
+    else:
+        summary = f"{who}: unclear email, needs a human ({cls.confidence:.2f})."
+        message = f"Bumpin could not tell what this email is. {cls.reason}"
+        suggestion = "Read it and file it by hand, or reply to ask what they need."
     with db.get_conn() as conn:
         tid = conn.execute(
             """INSERT INTO tickets (type, owner_type, owner_id, status, severity, summary, created_at, updated_at)
                VALUES ('help', ?, ?, 'needs_review', 'warning', ?, ?, ?)""",
-            (owner_type, owner["id"] if owner else None,
-             f"{who}: unclear email, needs a human ({cls.confidence:.2f}).", now(), now()),
+            (owner_type, owner["id"] if owner else None, summary, now(), now()),
         ).lastrowid
         conn.execute(
             """INSERT INTO findings (ticket_id, kind, severity, message, suggestion, quote, status)
                VALUES (?, 'low_confidence', 'warning', ?, ?, ?, 'open')""",
-            (tid, f"BumpIn could not tell what this email is. {cls.reason}",
-             "Read it and file it by hand, or reply to ask what they need.", snippet),
+            (tid, message, suggestion, snippet),
         )
         conn.execute("UPDATE emails SET ticket_id = ? WHERE id = ?", (tid, email_id))
         audit(conn, tid, "system", "ticket_created", {"type": "help", "unsure": True})
