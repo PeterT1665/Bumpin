@@ -20,6 +20,23 @@ def llm_enabled() -> bool:
     return getattr(llm, "_PROVIDER", "fake") != "fake"
 
 
+def team_notes() -> tuple[str, list[str]]:
+    """What Ravi uploaded as reference (festival brief, policies), for the prompt, and the file names."""
+    from backend.app.artists.uploads import memory_context  # uploads imports this module
+
+    try:
+        return memory_context()
+    except Exception:
+        return "", []
+
+
+def _notes_block(notes: str) -> str:
+    if not notes:
+        return ""
+    return ("\nReference files the festival team uploaded. Use them only where relevant, "
+            "and never invent anything they do not say:\n" + notes + "\n")
+
+
 def clean_text(text: str) -> str:
     """User-facing text must not contain em or en dashes."""
     return text.replace(" \u2014 ", ", ").replace("\u2014", ", ").replace("\u2013", " to ")
@@ -139,7 +156,7 @@ Facts: {facts}
 Draft message: {message}
 Draft suggestion: {suggestion}
 Team guidance for this kind of problem: {guidance}
-
+{notes}
 Respond with JSON: {{"message": "...", "suggestion": "..."}}"""
 
 
@@ -150,7 +167,8 @@ def explain(kind: str, facts: dict, message: str, suggestion: str) -> tuple[str,
             guidance = (load_rules("actions") or {}).get(kind, {}).get("action", "")
             out = llm.complete_json(
                 _EXPLAIN_PROMPT.format(kind=kind, facts=json.dumps(facts), message=message,
-                                       suggestion=suggestion, guidance=guidance),
+                                       suggestion=suggestion, guidance=guidance,
+                                       notes=_notes_block(team_notes()[0])),
                 _Explanation,
             )
             return clean_text(out.message), clean_text(out.suggestion)
@@ -176,14 +194,14 @@ _CHANGE_PROMPT = """An artist's team emailed a festival about their set. Summari
 
 Email:
 {text}
-
+{notes}
 Respond with JSON."""
 
 
 def parse_change(text: str) -> Change:
     if llm_enabled():
         try:
-            out = llm.complete_json(_CHANGE_PROMPT.format(text=text), Change)
+            out = llm.complete_json(_CHANGE_PROMPT.format(text=text, notes=_notes_block(team_notes()[0])), Change)
             out.reason = clean_text(out.reason)
             return out
         except Exception:

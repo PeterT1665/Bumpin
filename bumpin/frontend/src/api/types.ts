@@ -273,3 +273,22 @@ export interface InboxResult {
   is_major_change: boolean
   classification: unknown
 }
+
+/** POST /uploads, one per file. Equipment lists become inventory rows; anything
+ *  else is kept as Bumpin's memory and given to the AI as context. */
+export type UploadKind = 'equipment' | 'festival_brief' | 'policy' | 'rider' | 'vendor_document' | 'other'
+export interface UploadResult {
+  filename: string
+  kind?: UploadKind
+  summary: string
+  /** Who decided what the file is: plain code, the AI, or the file name as a fallback. */
+  decided_by?: 'code' | 'ai' | 'filename'
+  stored_as: 'equipment' | 'memory' | 'failed'
+  equipment?: { added: number; updated: number; unchanged: number; unknown_stages: string[] }
+  riders_rechecked?: number
+  memory_id?: number
+}
+
+export interface MemoryItem {
+  id: number; filename: string; kind: UploadKind; summary: string; uploaded_at: string; chars: number
+}

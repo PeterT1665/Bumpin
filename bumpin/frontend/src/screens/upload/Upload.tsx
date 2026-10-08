@@ -4,9 +4,10 @@ import { TopBar } from '@/components/AppShell'
 import { Button, Chip } from '@/components/primitives'
 import { DropZone, UploadGlyph } from './DropZone'
 import { FileCard } from './FileCard'
+import { api } from '@/api/client'
 import {
   ACCEPT_ATTR, SUPPORTED_FORMATS,
-  acceptFiles, nextSeq, orderFiles,
+  acceptFiles, docTypeOfKind, isManifest, keyOf, nextSeq, orderFiles,
 } from './files'
 import type { Rejection, UploadedFile } from './files'
 import s from './Upload.module.css'
@@ -15,12 +16,10 @@ import s from './Upload.module.css'
    113:43 "Bumpin - Files Uploaded" (populated). One route, one dashed surface,
    two contents; the state is simply whether any file is present.
 
-   THE BACKEND CANNOT STORE THESE FILES YET. There is no upload endpoint. The
-   only ingest path, POST /api/inbox/receive, takes `attachments` as a list of
-   repo-relative paths that must already exist on disk — `_store_email` raises
-   if one is missing — and it only ever writes `documents` rows. So this screen
-   reads name/size/type in the browser and holds everything in component state.
-   Nothing here pretends to be a server round trip. */
+   Each file is sent to POST /api/uploads as it lands. An equipment list becomes
+   rows on the Equipment screen and the rider checks re-run against it; anything
+   else is kept as Bumpin's memory, which the AI reads when it explains a finding
+   or words a reply. The card shows which happened. */
 
 interface State {
   files: UploadedFile[]
@@ -50,7 +49,8 @@ function restore(): State {
     return {
       files: files.filter((f): f is UploadedFile =>
         f && typeof f.id === 'string' && typeof f.name === 'string'
-        && typeof f.size === 'number' && typeof f.seq === 'number'),
+        && typeof f.size === 'number' && typeof f.seq === 'number')
+        .map((f) => (f.status === 'reading' ? { ...f, status: 'failed' as const } : f)),
       rejections: [],
     }
   } catch {
@@ -73,17 +73,44 @@ export function Upload() {
      pointer genuinely leaves the zone. */
   const dragDepth = useRef(0)
 
+  /* The latest list, for ingest to read without waiting on a state update. */
+  const filesRef = useRef(files)
+  filesRef.current = files
+
+  const patch = useCallback((id: string, change: Partial<UploadedFile>) => {
+    setState((prev) => ({ ...prev, files: prev.files.map((f) => (f.id === id ? { ...f, ...change } : f)) }))
+  }, [])
+
   const ingest = useCallback((list: FileList | null) => {
     if (!list || list.length === 0) return
     const incoming = Array.from(list)
-    setState((prev) => {
-      const { added, rejected } = acceptFiles(incoming, prev.files, nextSeq(prev.files))
-      return {
-        files: added.length ? [...prev.files, ...added] : prev.files,
-        rejections: rejected,
+    const { added, rejected } = acceptFiles(incoming, filesRef.current, nextSeq(filesRef.current))
+    const cards = added.map((c) => ({ ...c, status: 'reading' as const }))
+    setState((prev) => ({
+      files: cards.length ? [...prev.files, ...cards] : prev.files,
+      rejections: rejected,
+    }))
+    /* One at a time, equipment lists first, so the riders are re-checked against
+       the new equipment before anything that depends on it. */
+    const byKey = new Map(incoming.map((f) => [keyOf(f), f]))
+    const queue = [...cards].sort((a, b) => Number(isManifest(b)) - Number(isManifest(a)))
+    void (async () => {
+      for (const card of queue) {
+        const file = byKey.get(card.key)
+        if (!file) continue
+        try {
+          const [result] = await api.uploadFiles([file])
+          patch(card.id, {
+            status: result.stored_as === 'failed' ? 'failed' : 'done',
+            result,
+            docType: docTypeOfKind(result.kind, card.docType),
+          })
+        } catch {
+          patch(card.id, { status: 'failed' })
+        }
       }
-    })
-  }, [])
+    })()
+  }, [patch])
 
   const removeFile = useCallback((id: string) => {
     setState((prev) => ({ ...prev, files: prev.files.filter((f) => f.id !== id) }))

@@ -161,7 +161,7 @@ def _alias_match(name: str, candidates: list[dict]) -> dict | None:
     return best
 
 
-def match_items(items: list[RiderItem], stage_id: int | None = None) -> list[RiderItem]:
+def match_items(items: list[RiderItem], stage_id: int | None = None, *, use_llm: bool = True) -> list[RiderItem]:
     """Aliases first, LLM fallback. Sets match_confidence on every item."""
     if stage_id is None and items and items[0].artist_id:
         with db.get_conn() as conn:
@@ -183,7 +183,7 @@ def match_items(items: list[RiderItem], stage_id: int | None = None) -> list[Rid
             item.match_label = hit["canonical_name"]
             item.match_confidence = ALIAS_CONFIDENCE
             continue
-        item_id, conf = ai.llm_match(item.name, candidates)
+        item_id, conf = ai.llm_match(item.name, candidates) if use_llm else (None, 0.0)
         if item_id:
             item.inventory_item_id = item_id
             item.match_label = next(c["canonical_name"] for c in candidates if c["id"] == item_id)

@@ -1,3 +1,5 @@
+import type { UploadKind, UploadResult } from '@/api/types'
+
 /* Pure helpers for the upload slice. No React, no network — everything here is
    a function of the browser's File object, so it can be reasoned about and
    checked in isolation.
@@ -42,6 +44,22 @@ export interface UploadedFile {
   format: FileFormat
   docType: DocType
   uploadedAt: number
+  /** Where the backend is with it. Absent on cards saved before uploads were real. */
+  status?: 'reading' | 'done' | 'failed'
+  result?: UploadResult
+}
+
+/** The backend's verdict on a file, in this screen's bucket names. */
+export function docTypeOfKind(kind: UploadKind | undefined, fallback: DocType): DocType {
+  switch (kind) {
+    case 'equipment': return 'Equipment lists'
+    case 'festival_brief': return 'Festival brief'
+    case 'policy': return 'Policies and rules'
+    case 'rider': return 'Rider documents'
+    case 'vendor_document': return 'Vendor documents'
+    case 'other': return 'Unsorted documents'
+    default: return fallback
+  }
 }
 
 /* No 'Unsupported format'. Size and duplication are the only two reasons a

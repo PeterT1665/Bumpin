@@ -60,10 +60,18 @@ Vendor documents. Four files to drag live in the `Focus` folder on the desktop:
 land in four different buckets, which is the point of the beat — Bumpin names
 each file without being told. Any file type is accepted, up to 25 MB.
 
-This screen is **visual only**. There is no upload endpoint on the backend; the
-cards are held in the browser and survive navigation through localStorage.
-Dropping files does not change any of the other screens. Do not promise that it
-does.
+Each file is sent to the backend (`POST /api/uploads`) and the card says what
+happened to it. An equipment list (a table with item and quantity columns) becomes
+rows on the Equipment screen, and every rider on file is re-checked against it in
+plain code, so new or changed stock shows up as conflicts. Anything else (the
+brief, the policies) is kept as Bumpin's memory: when the AI is switched on it
+reads those files when it explains a finding, reads a change email or words a
+reply, and the drafted email lists them under "Context used". `GET /api/memory`
+lists what it holds.
+
+For the before and after, run `.venv/bin/python scripts/clear_inventory.py` after
+the reset, then drop the four files: the Equipment screen fills from the
+manifest and the findings come back exactly as the baseline has them.
 
 **Dashboard** (`/`). Intake over the week, hospitality spend against cap,
 readiness across every supplier. All of it is real, computed from the database.
@@ -122,7 +130,7 @@ Worth knowing before someone asks a pointed question.
   requirement count are hardcoded in `frontend/src/screens/riders/djNova.ts`,
   because the handwriting parser under-reads that page. Everything else on the
   riders board is computed.
-- **Upload stores nothing**, as above.
+- **Upload is real**, as above. Without an API key the memory is stored and listed, but only an AI with a key reads it.
 
 ## If something looks wrong
 

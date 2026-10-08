@@ -1,7 +1,7 @@
 import type {
   Artist, Highlight, InboundEmail, InboxResult, InventoryItem, NewInventoryItem,
   NewSet, Notification, OutboxRow, Overview, PhoneCard, RunsheetRow, Stage,
-  TicketDetail, TicketSummary, Vendor,
+  TicketDetail, TicketSummary, UploadResult, MemoryItem, Vendor,
 } from './types'
 
 /** Single-operator build: Ravi is always the actor. The backend requires the
@@ -132,6 +132,20 @@ export const api = {
 
   highlights: (docId: number) => get<Highlight[]>(`/documents/${docId}/highlights`),
   inboxReceive: (msg: InboundEmail) => post<InboxResult>('/inbox/receive', msg),
+
+  /** Multipart, so it skips req(): the browser must set the Content-Type boundary. */
+  uploadFiles: async (files: File[]) => {
+    const body = new FormData()
+    files.forEach((f) => body.append('files', f))
+    const res = await fetch(BASE + '/uploads', { method: 'POST', body, headers: { 'X-User': ACTOR } })
+    if (!res.ok) {
+      let payload: Record<string, unknown> = {}
+      try { payload = await res.json() } catch { /* non-JSON error body */ }
+      throw new ApiError(res.status, payload)
+    }
+    return res.json() as Promise<UploadResult[]>
+  },
+  memory: () => get<MemoryItem[]>('/memory'),
 }
 
 /** Served as bytes, not JSON — use these directly as src/href. */

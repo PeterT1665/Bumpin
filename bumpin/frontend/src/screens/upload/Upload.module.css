@@ -326,3 +326,18 @@
   white-space: nowrap;
   clip-path: inset(50%);
 }
+
+/* What the backend did with the file, under the card's meta line. */
+.outcome {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--r-chip);
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+}
+.outcome p { margin: 0; }
+.outcomeEquip { background: var(--accent-green-soft); color: var(--ink-900); }
+.outcomeMemory { background: var(--accent-blue-soft); color: var(--ink-900); }
+.outcomeFail { background: var(--accent-pink-soft); color: var(--ink-900); }

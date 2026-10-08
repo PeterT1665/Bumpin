@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 from datetime import date, datetime
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, PlainTextResponse, Response
 
 from backend.app import db
-from backend.app.artists import demo, riders
+from backend.app.artists import demo, riders, uploads
 from backend.app.artists._compat import audit
 from backend.app.artists.models import RunsheetRow
 # `_day` is private, but the label it builds IS the Run sheet's day tab. Formatting the
@@ -513,3 +513,21 @@ def document_highlights(doc_id: int) -> list[dict]:
         for rect in box.get("rects", []):
             out.append({**base, "rect": rect, "page_size": box["page_size"]})
     return out
+
+
+@router.post("/uploads")
+async def upload_files(files: list[UploadFile] = File(...), user: str = Depends(current_user)) -> list[dict]:
+    """Equipment lists become inventory rows; anything else is kept as Bumpin's memory."""
+    out = []
+    for f in files:
+        data = await f.read()
+        try:
+            out.append(uploads.ingest(f.filename or "upload", data))
+        except Exception as e:  # one unreadable file must not lose the others
+            out.append({"filename": f.filename, "stored_as": "failed", "summary": f"Could not read this file ({type(e).__name__})."})
+    return out
+
+
+@router.get("/memory")
+def memory() -> list[dict]:
+    return uploads.list_memory()

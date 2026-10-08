@@ -6,7 +6,14 @@ in facts, so drafting works with or without an LLM. Nothing is sent here.
 
 from __future__ import annotations
 
+import re
+
+from pydantic import BaseModel
+
+from backend.app.artists import ai
 from backend.app.artists._compat import draft_email
+from backend.app.shared import llm
+from backend.app.shared.rules import load_rules
 
 SIGN_OFF = "Kind regards,\nThe Riverside Festival Team"
 
@@ -17,9 +24,50 @@ def first_name(full: str | None) -> str:
 
 def _draft(ticket_id: int, to_addr: str, intent: str, subject: str, body: str,
            context_used: list[str], actor: str, extra: dict | None = None) -> int:
-    facts = {"subject": subject, "body": body, "context_used": context_used + ["email_policy.md"],
+    subject, body, read = polish(subject, body)
+    facts = {"subject": subject, "body": body, "context_used": context_used + ["email_policy.md"] + read,
              "actor": actor, **(extra or {})}
     return draft_email(ticket_id, to_addr, intent, facts)
+
+
+class _Email(BaseModel):
+    subject: str
+    body: str
+
+
+_POLISH_PROMPT = """You draft emails for the Riverside festival production team. Rewrite this draft so it reads
+naturally and follows the email policy. Keep every name, number, time, date and amount exactly as written,
+keep the greeting and the sign-off, and do not promise anything the draft does not. If a reference file the
+team uploaded is relevant, you may use it, but never invent facts. Do not use em dashes or en dashes.
+
+Email policy:
+{policy}
+{notes}
+Draft subject: {subject}
+Draft body:
+{body}
+
+Respond with JSON: {{"subject": "...", "body": "..."}}"""
+
+
+def polish(subject: str, body: str) -> tuple[str, str, list[str]]:
+    """AI wording on top of the template, using the uploaded reference files.
+
+    Kept only if every number and time in the template survives, so a fact can never
+    change. Returns the uploaded files the AI read, for context_used."""
+    if not ai.llm_enabled():
+        return subject, body, []
+    notes, names = ai.team_notes()
+    try:
+        out = llm.complete_json(_POLISH_PROMPT.format(
+            policy=load_rules("email_policy"), notes=ai._notes_block(notes), subject=subject, body=body), _Email)
+    except Exception:
+        return subject, body, []
+    facts = set(re.findall(r"\d[\d:,.]*\d|\d", subject + " " + body))
+    new_subject, new_body = ai.clean_text(out.subject), ai.clean_text(out.body)
+    if not new_body.strip() or any(f not in new_subject + " " + new_body for f in facts):
+        return subject, body, []
+    return new_subject, new_body, names
 
 
 def finding_reply(ticket_id: int, artist: dict, finding: dict, actor: str) -> int:

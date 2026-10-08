@@ -37,6 +37,7 @@ TABLES = [
     "outbox",
     "audit_log",
     "notifications",
+    "memory",
 ]
 
 

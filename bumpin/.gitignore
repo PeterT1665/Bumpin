@@ -10,3 +10,4 @@ build/
 .venv/
 data/bumpin.db
 data/preview/
+data/uploads/

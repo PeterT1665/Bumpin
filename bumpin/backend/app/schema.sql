@@ -162,3 +162,14 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TEXT NOT NULL,
     seen INTEGER NOT NULL DEFAULT 0
 );
+
+-- Files Ravi uploads that are not equipment lists: kept as context for the AI.
+CREATE TABLE IF NOT EXISTS memory (
+    id INTEGER PRIMARY KEY,
+    filename TEXT NOT NULL,
+    path TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    text TEXT,
+    summary TEXT,
+    uploaded_at TEXT NOT NULL
+);
