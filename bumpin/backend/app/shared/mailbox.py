@@ -1,7 +1,8 @@
 """A real mailbox. Polls an IMAP inbox and feeds each new email to the inbox pipeline.
 
 Set IMAP_USER and IMAP_PASSWORD in .env (for Gmail, an App Password) and the backend
-checks the inbox every IMAP_POLL_SECONDS. Each new email, with its attachments, goes
+checks the inbox every IMAP_POLL_SECONDS. Each email that arrives after the app starts,
+with its attachments, goes
 through exactly the same path as POST /api/inbox/receive, so it is classified, routed
 and turned into a ticket like any other. Nothing here sends mail.
 """
@@ -109,26 +110,42 @@ def handle(raw: bytes) -> dict | None:
 
 # --- the mailbox ----------------------------------------------------------------------------------
 
+# Where this copy of the app started reading. Every running copy keeps its own, so
+# several laptops on one mailbox each get every new email. Nothing is marked read in
+# the mailbox, and a demo reset does not re-import mail already seen.
+_watermark: int | None = None
+
+
+def _uidnext(box) -> int:
+    _, data = box.status("INBOX", "(UIDNEXT)")
+    m = re.search(rb"UIDNEXT (\d+)", data[0] or b"")
+    return int(m.group(1)) if m else 1
+
+
 def check_once() -> list[dict]:
-    """Fetch every unread email, run each through the pipeline, mark it read."""
+    """Run every email that arrived since this app started through the pipeline."""
+    global _watermark
     host, user, password, _ = _cfg()
     results = []
     with _lock:
         box = imaplib.IMAP4_SSL(host)
         try:
             box.login(user, password)
-            box.select("INBOX")
-            _, data = box.search(None, "UNSEEN")
-            for num in (data[0] or b"").split():
-                _, parts = box.fetch(num, "(BODY.PEEK[])")
+            box.select("INBOX", readonly=True)
+            if _watermark is None:
+                _watermark = _uidnext(box) - 1  # start from now: older mail is not ours to file
+                return []
+            _, data = box.uid("search", None, f"UID {_watermark + 1}:*")
+            # "N:*" always returns the newest message, even when it is older than N.
+            uids = sorted(int(u) for u in (data[0] or b"").split() if int(u) > _watermark)
+            for uid in uids:
+                _, parts = box.uid("fetch", str(uid), "(BODY.PEEK[])")
                 raw = next((p[1] for p in parts if isinstance(p, tuple)), b"")
-                try:
-                    r = handle(raw)
-                    if r:
-                        results.append(r)
-                finally:
-                    # Read either way, so one email that fails is not retried forever.
-                    box.store(num, "+FLAGS", "\\Seen")
+                # Move past it either way, so one email that fails is not retried forever.
+                _watermark = uid
+                r = handle(raw)
+                if r:
+                    results.append(r)
         finally:
             try:
                 box.logout()
