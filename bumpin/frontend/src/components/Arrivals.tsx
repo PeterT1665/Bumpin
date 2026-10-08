@@ -22,7 +22,7 @@ export const hrefOf = (e: RecentEmail) =>
 
 export function labelOf(e: RecentEmail) {
   if (e.ticket_type === 'help') return 'Change request'
-  if (e.ticket_type === 'vendor_eligibility') return e.updated_existing ? 'Vendor email' : 'New vendor'
+  if (e.ticket_type === 'vendor_eligibility') return 'Vendor email'
   return e.updated_existing ? 'Revised rider' : 'New rider'
 }
 
