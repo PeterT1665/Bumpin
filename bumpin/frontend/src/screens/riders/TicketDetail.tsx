@@ -6,6 +6,7 @@ import { DocumentPane, docKindOf, useDocumentText } from './DocumentPane'
 import { ChangeActionsCard, FindingCard, type RowError } from './cards'
 import { ResolveModal } from './ResolveModal'
 import { DetailsPanel, DonutPanel, ReadingPanel, type DetailRow } from './rail'
+import { DecisionPanel } from './DecisionPanel'
 import { djNovaReading, isDjNova, patchHighlights, patchTicket } from './djNova'
 import { hhmm, kindLabel, setTime } from './riders'
 
@@ -444,6 +445,10 @@ export function TicketDetail() {
 
         <aside className={s.rail}>
           <ReadingPanel title="Bumpin’s reading" paragraphs={reading} />
+          {ticket.type === 'rider_needs' && (
+            <DecisionPanel ticket={ticket} onDecided={setTicket}
+                           onViewDraft={() => { if (ticket.draft_email) setModalOpen(true) }} />
+          )}
           {isHelp ? (
             <DonutPanel title="Steps" unit={actions.length === 1 ? 'step' : 'steps'}
                         slices={[

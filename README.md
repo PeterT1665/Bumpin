@@ -89,7 +89,7 @@ If the page does not load:
 
 Reset the demo data between run-throughs (step 3).
 
-**1. A rider that does not fit the stage.** Open *Rider needs* (second icon on the left) and pick **Sparkle**. The rider is a phone photo. Hover the pink box on "3x Pioneer CDJ-3000": the River Stage owns 2. Click **Resolve**, edit the drafted reply if you like, and click **Send**. Try the same on **Halcyon** (a PDF).
+**1. A rider that does not fit the stage.** Open *Rider needs* (second icon on the left) and pick **Sparkle**. The rider is a phone photo. Hover the pink box on "3x Pioneer CDJ-3000": the River Stage owns 2. Click **Resolve**, edit the drafted reply if you like, and click **Send**. Then use **Approve rider** in the Decision panel: while a conflict is open it asks why you are approving anyway, and once approved the rider's equipment shows as reserved on the *Equipment* screen. Try the same on **Halcyon** (a PDF).
 
 **2. A certificate that expires too early.** Open *Vendors* and pick **Marlow Catering**. Hover "Valid until: 5 December 2026". The festival ends on 13 December. Click **Reject vendor** and give a reason.
 
@@ -166,7 +166,7 @@ Restart the backend. With `LLM_CACHE=on` every AI answer is saved under `data/ll
 - **The Dj Nova ticket is staged.** Its handwritten page is real, but the reader cannot place every handwritten line reliably, so that ticket's highlight boxes and wording are set by hand in the app. Sparkle's photographed rider is read for real by OCR.
 - **No email is really sent.** `EMAIL_MODE=mock` marks a draft as sent and nothing leaves the machine.
 - **Single user.** There is no login. The app acts as Ravi.
-- **Not built yet:** approving a whole rider from the laptop view (it works on the phone view), handwriting highlights, and vendors who write in other languages.
+- **Not built yet:** handwriting highlights, vendors who write in other languages, an outbox page listing every email, and two people deciding at once from the app (the backend already refuses a second decision).
 
 ---
 
