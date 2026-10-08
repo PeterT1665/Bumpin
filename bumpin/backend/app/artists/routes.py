@@ -38,6 +38,9 @@ def demo_reset(user: str = Depends(current_user)) -> dict:
         with db.get_conn() as dst:
             src.backup(dst)
         src.close()
+        # The snapshot predates newer tables (memory, mailbox_seen); put them back.
+        with db.get_conn() as conn:
+            db.init_schema(conn)
         with db.get_conn() as conn:
             counts = {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
                       for t in ("artists", "vendors", "tickets", "findings", "inventory_items")}
