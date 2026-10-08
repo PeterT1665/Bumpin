@@ -1,0 +1,766 @@
+/* Vendors slice. Every number here was read off a Figma node in
+   7NlXeHdubRDwYnkxyXotvO and the node id is named beside it. No colour or font
+   size is literal — they all come through tokens.css. */
+
+/* ===================================================== VENDOR PROGRESS BOARD */
+
+/* 159:46 Controls — 1288x69, HORIZONTAL gap 24, SPACE_BETWEEN, counter MAX */
+.controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px; /* 159:33 canvas AL gap */
+}
+
+/* 159:48 held a Vendors/Riders segmented pair; the nav rail already reaches the
+   rider board, so the slot is a sort control instead. Geometry is the rider
+   board's 101:4 control — 36 tall, r18, sunken, pad 0/16/0/20, gap 8 — so both
+   boards' control rows sit on the same baseline. */
+.sortWrap { position: relative; }
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px 0 20px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+.control:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 2px; }
+/* Open reads as a ring, not a border: a border would push the pill past 36. */
+.controlOpen { box-shadow: inset 0 0 0 1px var(--ink-300); color: var(--ink-900); }
+/* 101:7 chevron: 9x4.5 inside a 10x6 box. The 1.5 CENTER stroke renders past
+   that box, so it must not be clipped. */
+.chevron { display: block; flex: 0 0 auto; color: var(--ink-500); overflow: visible; }
+
+/* The panel surface (r 18, 1px #e4dece, shadow-panel) hung under the control. */
+.menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface-card);
+  border-radius: var(--r-panel);
+  box-shadow: inset 0 0 0 1px var(--ink-line), var(--shadow-panel);
+}
+/* The highlighted row carries the focus, so the list itself must not ring. */
+.menu:focus { outline: 0; }
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px 0 10px;
+  border-radius: var(--r-chip);
+  color: var(--ink-700);
+  white-space: nowrap;
+  cursor: default;
+}
+.optionCursor { background: var(--surface-sunken); color: var(--ink-900); }
+/* The status pill's 5px ink dot, so "selected" reads the same way it does there. */
+.optionDot { flex: 0 0 5px; width: 5px; height: 5px; border-radius: 50%; }
+.optionDotOn { background: var(--ink-900); }
+
+/* 159:74 Board — 1288x1225, HORIZONTAL gap 22 */
+.board {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+/* 159:449 Column — 216 wide, VERTICAL gap 14 */
+.column {
+  flex: 0 0 216px;
+  width: 216px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* 159:407 Column — Add — 98 wide */
+/* 159:407 draws this closing column at 98 wide, but its rule is the same
+   3px bar as every other column's and a 98px bar beside four 216px ones reads
+   as a mistake. Matched to the rest; the glyph inside stays right-aligned. */
+.columnAdd { flex: 0 0 216px; width: 216px; }
+
+/* 159:450 Rule — 216x3, r 2, fill #1a1614 */
+.columnRule {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink-900);
+}
+
+/* 159:451 Column head — 216x20, HORIZONTAL gap 8, SPACE_BETWEEN, CENTER */
+.columnHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 20px;
+}
+.columnHeadLabel { color: var(--ink-700); }          /* 159:452 fill #4a4235 */
+/* 159:409 Column head of the Add column — primary MAX */
+.columnHeadAdd { justify-content: flex-end; }
+
+/* 159:453 Plus — 10x10, bars 10x1.4 / 1.4x10, r 0.7, fill #7a7161 */
+.plus {
+  position: relative;
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
+}
+.plus::before,
+.plus::after {
+  content: '';
+  position: absolute;
+  border-radius: 0.7px;
+  background: var(--ink-500);
+}
+.plus::before { left: 0; top: 4.3px; width: 10px; height: 1.4px; }
+.plus::after { left: 4.3px; top: 0; width: 1.4px; height: 10px; }
+
+/* 159:456 Card — 216 wide, r 24, VERTICAL gap 16, pad 20, shadow-card, no stroke */
+.bcard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  text-decoration: none;
+  color: var(--ink-900);
+  width: 100%;
+}
+.bcard_valid { background: var(--accent-blue); }     /* 159:456 #bac9e7 */
+.bcard_conflict { background: var(--accent-pink); }  /* 159:472 #eba2d5 */
+.bcard_awaiting { background: var(--accent-yellow); }/* 159:488 #f0d977 */
+.bcard:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 2px; }
+
+/* 159:457 Title row — HORIZONTAL gap 8; title 151 wide, glyph 17 wide */
+.bcardTitleRow { display: flex; align-items: flex-start; gap: 8px; }
+.bcardTitle { margin: 0; flex: 1 1 auto; min-width: 0; color: var(--ink-900); }
+.bcardMore {                                          /* 159:459 ••• 16/24 SemiBold */
+  flex: 0 0 auto;
+  color: var(--ink-500);
+  font: 600 16px/24px var(--font-sans);
+}
+
+/* 159:460 Progress — HORIZONTAL gap 4, five 32x4 segments, r 2 */
+/* Stands in for the track on a card whose ticket raised no conflicts. Same box
+   as the 4px bar it replaces, so the card keeps its drawn height. */
+/* Only for the brief moment before the tally lands. A card with no
+   conflicts renders nothing at all here — the footer closes the gap — because
+   a reserved 4px of blank is a row that says nothing. */
+.noConflicts { margin: 0; height: 4px; line-height: 4px; color: var(--ink-500); }
+
+.progress { display: flex; gap: 4px; }
+.progressSeg { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--surface-card); }
+.progressSegOn { background: var(--ink-900); }
+
+/* 159:466 Footer — HORIZONTAL gap 12, counter CENTER */
+.bcardFooter { display: flex; align-items: center; gap: 12px; }
+/* 159:467 Avatar — 36x36, r 18, fill #faf4e7 */
+.bcardAvatar {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--surface-app);
+  color: var(--ink-700);
+  display: grid;
+  place-items: center;
+}
+/* 159:469 Meta — 128 wide, VERTICAL gap 0 */
+.bcardMeta { flex: 1 1 auto; min-width: 0; }
+.bcardVendor { display: block; margin: 0; color: var(--ink-900); }  /* 159:470 16/24 SemiBold */
+.bcardDate { display: block; margin: 0; color: var(--ink-500); }    /* 159:471 14/20 Regular */
+
+.columnEmpty { padding: 8px 0; color: var(--ink-500); }
+
+/* Sits between the controls and the board while a query is active. */
+.filterNote { margin: 0 0 20px; color: var(--ink-500); }
+
+/* =========================================================== VENDOR DETAIL */
+
+/* 176:29 Back — 175x36, r 18, fill #f2ecdc; chevron at x 15, label at x 30 */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 40px 0 15px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  text-decoration: none;
+}
+.backIcon { flex: 0 0 5px; color: var(--ink-700); }
+
+/* 176:32 Vendor title — 48/54, 12px below the back pill, 30px above the split */
+.detailTitle { margin: 12px 0 0; color: var(--ink-900); }
+
+/* 176:33 + 176:110 — 948 and 316 wide with a 24px gutter */
+.split {
+  display: grid;
+  grid-template-columns: 948fr 316fr;
+  gap: 24px;
+  margin-top: 30px;
+  align-items: start;
+}
+.docColumn { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.rail { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* ------------------------------------------------------------------- panels */
+
+/* 176:33 / 176:110 / 176:115 / 176:127 / 176:74 — white, 1px #e4dece, r 24,
+   DROP_SHADOW 0,2 blur 10 #12141f@0.06 (= --shadow-card). The rail panels pad
+   24px on the sides and 26/28 top/bottom; the document panel pads 56.
+
+   The Figma stroke is strokeAlign INSIDE on a hand-placed frame, so the frame's
+   stated height already contains it and the padding is measured from the frame
+   edge. A real CSS border would add 2px to every panel and push the content in
+   by 1px; an inset shadow reproduces the stroke with no layout cost. */
+.panel {
+  background: var(--surface-card);
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: inset 0 0 0 1px var(--ink-line), var(--shadow-card);
+  min-width: 0;
+}
+.panelRail { padding: 26px 24px 28px; }
+.panelDoc { padding: 56px 56px 40px; }
+.panelFlush { padding: 0; }
+
+/* 176:110 Bumpin's reading — title then 18px, paragraphs 20px apart */
+.railTitle { margin: 0; color: var(--ink-900); }
+.reading { margin: 18px 0 0; display: flex; flex-direction: column; gap: 20px; }
+.reading p { margin: 0; color: var(--ink-700); }
+.readingQuiet { color: var(--ink-500) !important; }
+
+/* 176:115 Documents — head 24px in, donut 4px under the head, 16px bottom pad */
+.panelDocuments { padding: 24px 24px 16px; }
+.docsHead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.docsHeadTitle { margin: 0; color: var(--ink-900); }
+.docsHeadCount { margin: 0; color: var(--ink-500); }
+ /* Matched to the rider rail: centred on the legend and dropped 8px, which the
+   4px of 176:117 does not give against a two-row legend. */
+.donutRow { display: flex; align-items: center; gap: 20px; margin-top: 12px; }
+/* 176:118 Conflicts / 176:119 Clear — 96x96, innerRadius 0.62 */
+.donut { position: relative; flex: 0 0 96px; width: 96px; height: 96px; margin-top: 8px; }
+.donut svg { display: block; width: 96px; height: 96px; }
+.donutTotal {                                        /* 176:120 — 28/34 centred */
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-900);
+}
+.legend { flex: 1 1 auto; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.legendRow { display: flex; align-items: center; gap: 8px; }
+.legendDot { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
+.legendDotConflict { background: var(--accent-pink); }  /* 176:121 #eba2d5 */
+.legendDotClear { background: var(--accent-green); }    /* 176:124 #9eab6c */
+/* `min-width: 0` or the longer word refuses to shrink and shoves its count
+   past the row's right edge, so the two counts stop lining up. */
+.legendLabel { flex: 1 1 auto; min-width: 0; color: var(--ink-700); }
+.legendValue {                                          /* 176:123 */
+  flex: 0 0 56px; width: 56px; text-align: right; color: var(--ink-900);
+}
+/* Compounded on purpose. The text-style class sits on the same element and
+   its `font:` shorthand resets BOTH font-variant-numeric and
+   font-feature-settings to initial, and it wins on source order. Two
+   classes outrank one, so the digits stay tabular. */
+.legendRow .legendValue {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+
+/* 176:127 Details — head 24px in, first row 24px under the head, pitch 30 */
+.panelDetails { padding: 24px; }
+.detailsTable { margin: 24px 0 0; }  /* <dl> default margin would add 16px */
+.detailsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+}
+.detailsRow:first-child { padding-top: 0; }
+.detailsRow:last-child { padding-bottom: 0; }
+/* 179:4 — the hairline is a 1px rectangle on the row boundary, not a border that
+   grows the row, so it is drawn as an inset shadow. */
+.detailsRow + .detailsRow { box-shadow: inset 0 1px 0 0 var(--ink-line); }
+.detailsRow dt { color: var(--ink-500); }
+/* Every design row is one 16px line on a 30px pitch (179:2…179:33), so a long
+   value truncates rather than wrapping the row open. */
+.detailsRow dd {
+  margin: 0;
+  color: var(--ink-900);
+  text-align: right;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detailsRow dt { white-space: nowrap; }
+
+/* ------------------------------------------------------------- document pane */
+
+/* The document panel is the design's 828px box: the rendered source scrolls
+   inside it, the suggestion cards sit under it against the 40px bottom pad. */
+.docPanel {
+  /* 176:33 is 828 tall. min-height rather than height so a vendor with several
+     open findings grows the panel instead of crushing the source. */
+  min-height: 828px;
+  display: flex;
+  flex-direction: column;
+}
+.docSurface { flex: 1 1 auto; min-height: 240px; overflow: auto; }
+
+/* The positioning context the highlights and their hover-anchored card share,
+   and what the card is clamped to is `.docSurface` above — so a highlight near
+   an edge still shows the whole card inside the pane. */
+.stage { position: relative; }
+
+/* 178:2 / 178:3 / 178:4 — doc header, subline 12px below, divider 20px below */
+.docHead { margin: 0; color: var(--ink-500); }
+.docSub { margin: 12px 0 0; color: var(--ink-500); }
+.docDivider { height: 1px; background: var(--ink-line); margin: 20px 0 0; border: 0; }
+
+/* 180:* — text-offset highlights: inflate the span by 5px/3px, r 5, soft fill,
+   and a 2px solid underline flush with the bottom of the box. */
+.docText {
+  margin: 32px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink-700);
+}
+.mark {
+  border-radius: 5px;
+  padding: 3px 5px;
+  margin: 0 -5px;
+  color: var(--ink-900);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.mark_conflict { background: var(--accent-pink-soft); box-shadow: inset 0 -2px 0 0 var(--accent-pink); }
+.mark_warning { background: var(--accent-yellow-soft); box-shadow: inset 0 -2px 0 0 var(--accent-yellow); }
+.mark_info { background: var(--accent-blue-soft); box-shadow: inset 0 -2px 0 0 var(--accent-blue); }
+.mark_muted { background: var(--surface-sunken); box-shadow: inset 0 -2px 0 0 var(--ink-300); color: var(--ink-500); }
+
+/* Every mark the pane draws — in the document body and in the quote list alike —
+   opens its finding's card, so it answers the pointer. The role attribute is what
+   carries that: a mark without it is decoration and stays inert. */
+.mark[role='button'] { cursor: pointer; transition: background-color 90ms ease-out; }
+.mark[role='button']:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 1px; }
+.mark_conflict[role='button']:hover, .mark_conflict[role='button']:focus-visible
+  { background: color-mix(in srgb, var(--accent-pink) 55%, var(--accent-pink-soft)); }
+.mark_warning[role='button']:hover, .mark_warning[role='button']:focus-visible
+  { background: color-mix(in srgb, var(--accent-yellow) 55%, var(--accent-yellow-soft)); }
+.mark_info[role='button']:hover, .mark_info[role='button']:focus-visible
+  { background: color-mix(in srgb, var(--accent-blue) 55%, var(--accent-blue-soft)); }
+
+/* pdf / image: a page-shaped box with the boxes laid over it proportionally.
+
+   An A4 at the pane's 752px content width renders 1064 tall, and every parsed
+   field on these certificates sits in the top 177 of the 842pt page — 224px, a
+   fifth of the way down. The remaining four fifths is blank paper, so the page
+   scrolls inside a capped viewport instead of stretching the panel to 2429.
+
+   The cap is 480. 176:33's 828 less the 56/40 pads leaves 732; the header block
+   takes 65 and the pinned decision card 244, which would allow 423 — but the
+   lowest highlight ends 224px into the page and the tallest card is 220, so a
+   423 viewport makes the clamp slide the card back up over the very line it
+   describes. 480 is 454 (224 + 2 + 8 + 220) plus slack, and holds the panel
+   57px over its design height.
+
+   Scrolling rather than scaling is deliberate: the boxes are positioned in
+   percentages of the page box, so cropping the view leaves every one of them
+   exactly over its line. A transform would have to be applied to the page and
+   its overlay together to keep that true. */
+.pageViewport { max-height: 480px; overflow-y: auto; }
+.page {
+  position: relative;
+  width: 100%;
+  background: var(--surface-card);
+  /* Keeps the overlay's multiply blend inside the page instead of letting it
+     reach the panel and canvas behind it. */
+  isolation: isolate;
+}
+.pageMedia { display: block; width: 100%; height: 100%; border: 0; }
+.pageImg { display: block; width: 100%; height: auto; }
+/* The box is the hover/focus target that opens its finding's card, so it is a
+   real button. Its geometry is unchanged: the tint and the 2px underline moved
+   to a child because `mix-blend-mode` and `opacity` on the button itself would
+   wash out the focus ring too. */
+.box {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.box:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 1px; }
+.boxFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  background: var(--box-fill);
+  border-bottom: 2px solid var(--box-rule);
+  /* Multiply over the light tint leaves the dark glyphs beneath it readable;
+     an opaque fill hides the very line the box is pointing at. */
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  transition: background-color 90ms ease-out;
+}
+.box_conflict { --box-fill: var(--accent-pink-soft); --box-rule: var(--accent-pink); }
+.box_warning { --box-fill: var(--accent-yellow-soft); --box-rule: var(--accent-yellow); }
+.box_info { --box-fill: var(--accent-blue-soft); --box-rule: var(--accent-blue); }
+.box_muted { --box-fill: var(--surface-sunken); --box-rule: var(--ink-300); }
+/* The "point at me" affordance: the tint deepens toward its own solid accent and
+   nothing moves, so hovering a box never reflows the page. */
+.box:hover .boxFill,
+.box:focus-visible .boxFill {
+  background: color-mix(in srgb, var(--box-rule) 55%, var(--box-fill));
+}
+
+.quoteList { margin: 32px 0 0; display: flex; flex-direction: column; gap: 16px; }
+.quote { margin: 0; color: var(--ink-700); }
+.quoteMark { color: var(--ink-900); }
+
+/* A finding with no box on this page is reached from its quote, and a finding
+   with no quote either is reached from its message — so the message answers the
+   pointer the way a mark does. It keeps the 2px tone rule and drops the soft
+   fill: the sentence is Bumpin's, not a quotation off the page, and tinting it
+   would read as something the document said. */
+.quoteMark[role='button'] {
+  border-radius: 5px;
+  padding: 3px 5px;
+  margin: 0 -5px;
+  box-shadow: inset 0 -2px 0 0 var(--quote-rule);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: pointer;
+  transition: background-color 90ms ease-out;
+}
+.quoteMark[role='button']:hover,
+.quoteMark[role='button']:focus-visible { background: var(--quote-soft); }
+.quoteMark[role='button']:focus-visible { outline: 2px solid var(--ink-900); outline-offset: 1px; }
+.quoteRule_conflict { --quote-rule: var(--accent-pink); --quote-soft: var(--accent-pink-soft); }
+.quoteRule_warning { --quote-rule: var(--accent-yellow); --quote-soft: var(--accent-yellow-soft); }
+.quoteRule_info { --quote-rule: var(--accent-blue); --quote-soft: var(--accent-blue-soft); }
+.quoteRule_muted { --quote-rule: var(--ink-300); --quote-soft: var(--surface-sunken); }
+
+/* --------------------------------------------------------------- pages strip */
+
+/* 176:74 Pages — 948x84; thumbs 56x72 r 8 on a 68px pitch, 6px above and below;
+   the Prev/thumbs/Next cluster is centred and the counter sits 36px off the right */
+.pages {
+  position: relative;
+  height: 84px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.pagesNav {                                          /* 176:75 — 40x40, r 20 */
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 20px;
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+}
+.pagesNav:disabled { opacity: 0.45; cursor: not-allowed; }
+.pagesStrip { display: flex; align-items: center; gap: 12px; }
+.thumb {                                             /* 176:79 — 56x72, r 8 */
+  flex: 0 0 56px;
+  width: 56px;
+  height: 72px;
+  padding: 12px 10px 0;
+  border: 0;
+  /* 8px is not a token radius — the design uses it only here. */
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--ink-line);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.thumbOn {                                           /* 176:85 — white, 2px #1a1614 */
+  background: var(--surface-card);
+  box-shadow: inset 0 0 0 2px var(--ink-900);
+}
+.thumbLine { height: 2px; background: var(--ink-line); }
+.thumbOn .thumbLine { background: var(--ink-300); }
+.pagesLabel {                                        /* 176:109 — right, 36px in */
+  position: absolute;
+  right: 36px;
+  color: var(--ink-500);
+}
+
+/* ---------------------------------------------------------- suggestion card */
+
+/* 176:65 — 440x200, r 18, 1px #e4dece, shadow 0,6 blur 20 #12141f@0.14
+   (= --shadow-panel); pad 18 20 24; the open one gets a 2px #4a4235 border
+   (204:237). */
+.suggestion {
+  width: 440px;
+  max-width: 100%;
+  padding: 18px 20px 24px;
+  border: 0;
+  border-radius: var(--r-panel);
+  background: var(--surface-card);
+  box-shadow: inset 0 0 0 1px var(--ink-line), var(--shadow-panel);
+}
+.suggestionOpen { box-shadow: inset 0 0 0 2px var(--ink-700), var(--shadow-panel); }
+/* Where every card on this screen lives: placed by DocumentPane just off its
+   highlight's bottom-right and clamped inside `.docSurface`. It is a sibling of
+   the page's scroller, not a child, so the scroller cannot clip it.
+
+   Exactly one card hangs here. A highlight used to reveal the finding's
+   suggestion AND the ticket's decision stacked together, and because a vendor
+   ticket's summary is literally "{vendor}: {worst finding message}" the two
+   printed the same sentence twice. The verdict is now the suggestion's footer. */
+.anchorCard {
+  position: absolute;
+  z-index: 3;
+  width: 440px;
+  max-width: 100%;
+}
+.suggestionHead { display: flex; align-items: center; gap: 10px; }
+.suggestionTitle { margin: 0; color: var(--ink-900); }
+.suggestionCopy { margin: 10px 0 0; color: var(--ink-700); }
+.suggestionActions { margin-top: 28px; display: flex; gap: 10px; }
+
+.notice { margin: 10px 0 0; color: var(--ink-500); }
+
+/* ------------------------------------------------- 199:2 change actions */
+
+/* 200:3 is the same 440-wide shell as 176:65 with the single paragraph
+   replaced by a list: pad 18/20/20 and a 14px vertical rhythm between the
+   intro, the rows and the footer. */
+.listCard { padding-bottom: 20px; }
+.listIntro { display: flex; flex-direction: column; gap: 10px; }   /* 200:4 */
+.listIntroCopy { margin: 0; color: var(--ink-700); }               /* 200:9 */
+.rows { margin-top: 14px; display: flex; flex-direction: column; }  /* 200:10, gap 0 */
+.divider { height: 1px; background: var(--ink-line); }              /* 200:11 */
+
+/* 200:12 — 12px top and bottom, 12px between the copy and the buttons, counter
+   CENTER; 202:22 switches to MIN so an inline refusal sits under the copy. */
+.row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.rowBlocked { align-items: flex-start; }
+.rowCopy { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rowTitle { margin: 0; color: var(--ink-900); }                     /* 200:14 */
+.rowTitleDone { color: var(--ink-700); }                            /* 201:14 once decided */
+.rowDetail { margin: 0; color: var(--ink-500); }                    /* 200:15 */
+
+/* 202:56 — soft pink on pink, r8, pad 4/8, dark text. No red in this system. */
+.rowError {
+  margin: 6px 0 0;
+  padding: 4px 8px;
+  border: 1px solid var(--accent-pink);
+  border-radius: 8px;
+  background: var(--accent-pink-soft);
+  color: var(--ink-900);
+}
+
+.rowActions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }   /* 200:16 */
+.rowStatus { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }   /* 201:16 */
+.rowDecidedBy { color: var(--ink-500); }                            /* 201:55 */
+
+/* 200:17 Approve: #141210, r14, pad 6/14. 200:19 Edit (here Deny): white with a
+   1px line, same radius and padding. */
+.pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.pillFilled { background: var(--surface-inverse); color: var(--surface-app); }
+.pillOutline {
+  background: var(--surface-card);
+  color: var(--ink-700);
+  border: 1px solid var(--ink-line);
+}
+.pill:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 200:52 — 12px of clear space, then plain text actions on no rule at all.
+   Flex rather than block: an inline-block button in a block picks up the line
+   box descender and 200:52 is exactly 32 tall. */
+.cardFoot { display: flex; align-items: center; gap: 16px; padding-top: 12px; }
+.textAction {
+  border: 0; padding: 0; background: transparent;
+  color: var(--ink-900);
+}
+.textAction:disabled { opacity: .45; cursor: not-allowed; }
+.textActionQuiet { color: var(--ink-500); text-decoration: underline; }
+
+/* ================================================================== MODAL */
+
+/* 204:333 Scrim — covers the canvas (not the rail), #1a1614 @ 0.4.
+   Inset to the app window, the way the rider panel's scrim (204:177) already
+   is. `inset: 0 0 0 var(--rail-w)` ran it to the edges of the browser instead,
+   so the dim spilled outside the rounded frame, over the page background and
+   past the top and bottom of the app — which reads as the panel casting a
+   shadow across the whole screen rather than dimming the canvas behind it. It
+   also let the panel itself grow taller than the window, because `max-height:
+   100%` resolves against this box. */
+.scrim {
+  position: fixed;
+  top: var(--window-inset);
+  right: var(--window-inset);
+  /* Down to the screen edge, like the rider modal: the page scrolls behind the
+     modal, so stopping at the inset left an undimmed strip along the bottom. */
+  bottom: 0;
+  left: calc(var(--window-inset) + var(--rail-w));
+  border-radius: 0 var(--r-window) 0 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(26, 22, 20, 0.4);
+}
+
+/* 204:334 Modal — 640x742, r 24.
+   The Figma's two drop shadows are deliberately not here, and neither is the
+   scroll. See the rider panel in ResolveModal.module.css: the shadows read as
+   a dark smear on this background when the scrim is already lifting the panel
+   off the page, and a 386px-tall email box inside a scrolling panel pushed the
+   heading and the To row off the top of a laptop viewport. Only the email box
+   flexes, so the heading and the buttons are always on screen. */
+.modal {
+  width: 640px;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: var(--surface-card);
+  border-radius: var(--r-card);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 204:335 Head — pad 28 32 24; 204:336 header row 28 tall, SPACE_BETWEEN */
+.modalHead {
+  padding: 28px 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.modalTitle { margin: 0; color: var(--ink-900); }
+.modalClose {                                        /* 204:338 — 22/28, #7a7161 */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--ink-500);
+  font: 500 22px/28px var(--font-display);
+  letter-spacing: -0.005em;
+}
+
+/* 204:340 Field — 640x52, pad 14 32, gap 16; label 56 wide, value 504 */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 32px;
+  border-top: 1px solid var(--ink-line);
+}
+.fieldLabel { flex: 0 0 56px; width: 56px; color: var(--ink-500); }
+.fieldValue { flex: 1 1 auto; min-width: 0; color: var(--ink-900); }
+.fieldInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-900);
+  font: 400 16px/24px var(--font-sans);
+}
+
+/* 204:352 Body section — pad 24 32 28, VERTICAL gap 16 */
+.modalBody {
+  padding: 24px 32px 28px;
+  border-top: 1px solid var(--ink-line);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Takes the leftover height and is the only part allowed to shrink. */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* 204:353 Email body — 576x386, r 24, #f2ecdc, 1px #e4dece, pad 24, gap 12 */
+.emailBox {
+  /* 204:353 draws it 386 tall; that is the basis rather than a floor, so it
+     grows on a tall window and shrinks on a short one instead of pushing Send
+     off the bottom. */
+  flex: 1 1 386px;
+  min-height: 0;
+  padding: 24px;
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-card);
+  background: var(--surface-sunken);
+  color: var(--ink-900);
+  resize: none;
+  width: 100%;
+  display: block;
+  font: 400 16px/24px var(--font-sans);
+}
+.emailBox:focus-visible { outline: 2px solid var(--ink-900); outline-offset: -2px; }
+
+/* 204:359 Actions — 48 tall, pad-top 8, primary MAX, gap 12. The contract wants
+   the drafted email's `context_used` on screen (§9) and the draft/send guarantee
+   spelled out; both ride in the empty left half of this row so the modal stays
+   742 tall. */
+.modalActions {
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+}
+/* 204:360 / 204:362 — pad 10/32, so 32px horizontal, not the primitive's 20. */
+.modalActions button { padding: 0 32px; }
+.modalActionsRight { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.modalCaption { min-width: 0; display: flex; flex-direction: column; }
+.modalNote,
+.modalContext {
+  margin: 0;
+  color: var(--ink-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================ shared states */
+
+.loading { padding: 56px 0; color: var(--ink-500); }
+.error {
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  border-radius: var(--r-chip);
+  background: var(--accent-pink-soft);
+  color: var(--ink-900);
+}
+.unfiled { margin: 20px 0 0; color: var(--ink-500); }

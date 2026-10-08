@@ -1,0 +1,5 @@
+Vendor type,Required documents,If they use gas,Minimum insurance cover AUD,All documents valid through
+food,food_safety; insurance; permit,gas,10000000,2026-12-13
+beverage,insurance; permit,gas,10000000,2026-12-13
+merch,insurance,n/a,5000000,2026-12-13
+other,insurance; permit,gas,10000000,2026-12-13

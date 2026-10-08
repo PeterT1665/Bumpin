@@ -1,0 +1,3 @@
+# LLM response cache directory
+# Files here are keyed by prompt hash and auto-generated.
+# Set LLM_CACHE=on in .env to enable caching.

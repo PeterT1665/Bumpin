@@ -1,0 +1,8 @@
+{
+  "from": "jo@smokeandco.example.test",
+  "subject": "Smoke and Co: insurance certificate",
+  "body": "Hi team,\n\nAttached is our public liability insurance certificate. Our gas compliance certificate is coming, the installer says it will be sent to us this week and I will forward it as soon as it lands. We will have the LPG rig on site.\n\nThanks,\nJo Reyes\nSmoke and Co",
+  "attachments": [
+    "data/docs/vendors/smoke_and_co_insurance.pdf"
+  ]
+}

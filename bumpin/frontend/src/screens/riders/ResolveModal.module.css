@@ -1,0 +1,113 @@
+/* Figma 204:2 -> 204:177 "Scrim" + 159:414 "Modal — Resolve conflicts". */
+
+/* 204:177: #1a1614 at 40%, 1368x1140 starting at x=72 — it covers the canvas,
+   not the rail. The chrome is fixed (backdrop inset 56, rail 72), so the same
+   rect comes out of the tokens. The right corners follow the window radius
+   because the Figma scrim is clipped by the r20 screen frame. */
+.scrim {
+  position: fixed;
+  top: var(--window-inset);
+  right: var(--window-inset);
+  /* Down to the screen edge: the page scrolls behind the modal, so stopping at the
+     window inset left an undimmed strip of content along the bottom. */
+  bottom: 0;
+  left: calc(var(--window-inset) + var(--rail-w));
+  background: var(--ink-900);
+  opacity: .4;
+  border-radius: 0 var(--r-window) 0 0;
+  z-index: 10;
+}
+
+.layer {
+  position: fixed;
+  top: var(--window-inset);
+  right: var(--window-inset);
+  bottom: var(--window-inset);
+  left: calc(var(--window-inset) + var(--rail-w));
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 11;
+}
+
+/* 159:414: 640 wide, white, r24. The Figma's two drop shadows are deliberately
+   not here: the scrim behind already lifts the panel off the page, and on a
+   light background the pair read as a dark smear down the left and bottom
+   edges rather than as depth.
+   A flex column, not a scrolling block. The panel used to be `overflow: auto`
+   with a 410px-tall body box, which on a laptop viewport pushed the heading,
+   the To row and the Cc row out of sight: the panel opened mid-way down
+   itself, showing Subject first with no way to tell what the dialog was. Now
+   only the body box flexes, so the heading and the buttons are always on
+   screen and the box takes whatever height is left. */
+.modal {
+  width: 640px;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface-card);
+  border-radius: var(--r-card);
+}
+
+/* 159:415 Head: VERTICAL gap 8, pad 28/32/24/32. */
+.head { padding: 28px 32px 24px; }
+.headRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.title { margin: 0; color: var(--ink-900); }                 /* 159:417 display 22/28 */
+.close {                                                      /* 159:418 "×" ink-500 */
+  border: 0; padding: 0; background: transparent;
+  color: var(--ink-500);
+  line-height: 28px;
+}
+
+.divider { height: 1px; background: var(--ink-line); }        /* 159:424 full width */
+
+/* 159:425 Field: HORIZONTAL gap 16, pad 14/32, counter CENTER -> 52 tall. */
+.field { display: flex; align-items: center; gap: 16px; padding: 14px 32px; }
+.fieldLabel { flex: 0 0 56px; width: 56px; color: var(--ink-500); }   /* 159:426 is 56 wide */
+.fieldValue {
+  flex: 1 1 auto; min-width: 0;
+  border: 0; outline: 0; padding: 0; background: transparent;
+  color: var(--ink-900);
+  font: 400 16px/24px var(--font-sans);                       /* 159:427 */
+}
+
+/* 159:437 Body section: VERTICAL gap 16, pad 24/32/28/32. */
+.body {
+  padding: 24px 32px 28px; display: flex; flex-direction: column; gap: 16px;
+  /* Takes the leftover height and is the only part allowed to shrink.
+     `min-height: 0` because a flex item will not shrink past its content
+     otherwise, which is what made the whole panel overflow. */
+  flex: 1 1 auto; min-height: 0;
+}
+
+/* 159:438 Email body: #f2ecdc, 1px #e4dece, r24, pad 24, paragraph gap 12. */
+.bodyBox {
+  width: 100%;
+  padding: 24px;
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-card);
+  background: var(--surface-sunken);
+  color: var(--ink-900);
+  font: 400 16px/24px var(--font-sans);                       /* 160:254 */
+  outline: 0;
+  resize: none;
+  /* 159:438 draws it 410 tall, which is the basis rather than a floor: it
+     grows on a tall window and shrinks on a short one instead of pushing the
+     Send button off the bottom. */
+  flex: 1 1 410px; min-height: 0;
+}
+
+/* 159:442 Actions: pad-top 8, gap 12, primary MAX so both sit right. */
+.actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 8px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 20px; white-space: nowrap;
+}
+.btnSend   { padding: 10px 32px; background: var(--surface-inverse); color: var(--surface-app); }  /* 159:447 */
+.btnCancel { padding: 9px 32px; background: var(--surface-card); color: var(--ink-700);
+             border: 1px solid var(--ink-line); }              /* 159:443 pad 9 -> 40 tall */
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.note { margin: 0; color: var(--ink-500); }

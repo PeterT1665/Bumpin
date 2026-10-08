@@ -1,0 +1,161 @@
+/* Figma 86:2 "Bumpin — Rider needs", 111:2 (new column) and 231:766 (empty).
+   Node ids sit beside the values they came from. */
+
+/* 87:14 Controls: SPACE_BETWEEN, counter MAX, gap 24. Canvas gap is 28. */
+.controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+/* 101:3 Dropdowns: gap 8. */
+.dropdowns { display: flex; align-items: center; gap: 8px; }
+
+/* 101:4 Control: 36 tall, r18, #f2ecdc, pad 0/16/0/20, gap 8. */
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px 0 20px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunken);
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+/* 101:7 chevron: 9x4.5 inside a 10x6 box, stroke #7a7161 1.5 round. */
+/* 1.5 CENTER-aligned stroke renders past the 10x6 box, so do not clip it. */
+.chevron { display: block; flex: 0 0 auto; color: var(--ink-500); overflow: visible; }
+
+/* 88:2 Board: HORIZONTAL gap 22. */
+.board { display: flex; align-items: flex-start; gap: 22px; }
+
+/* 88:3 Column: 240 in the mock, VERTICAL gap 14.
+   Grown to fill rather than pinned at 240. The mock is drawn at one width with
+   one set of columns; here the count follows the stages plus however many the
+   operator has added, so a fixed 240 left the board stopping short of the right
+   margin — the last column's rule ended 150px inside the stat strip above it,
+   which read as the board being cut off rather than ending. 240 stays as the
+   floor, so a board with enough columns to need scrolling still gets cards the
+   drawn width rather than squeezing them. */
+.column {
+  flex: 1 1 240px;
+  min-width: 240px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* 88:4 Rule: 240x3, r2, #1a1614 — the same ink on every column. */
+.rule { height: 3px; border-radius: 2px; background: var(--ink-900); }
+
+/* 88:5 Column head: SPACE_BETWEEN, counter CENTER, 20 tall, gap 8. */
+.colHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 20px; }
+/* 88:5 is exactly 20 tall, so the h2 must not carry the UA margin. */
+.colName { margin: 0; color: var(--ink-700); }          /* 88:6  sans medium 14/20 */
+/* 115:28 / 231:1160: the add column pushes its plus to the right. */
+.colHeadAdd { justify-content: flex-end; }
+
+/* 115:14 Plus: a 10x10 box, two 1.4 bars, r0.7, #7a7161. */
+.plus {
+  position: relative;
+  width: 10px; height: 10px;
+  flex: 0 0 auto;
+  border: 0; padding: 0;
+  background: transparent;
+}
+.plus::before, .plus::after {
+  content: ''; position: absolute; background: var(--ink-500); border-radius: 0.7px;
+}
+.plus::before { left: 0; top: 4.3px; width: 10px; height: 1.4px; }
+.plus::after  { left: 4.3px; top: 0; width: 1.4px; height: 10px; }
+
+/* 116:5 Name — editing: gap 1, caret 1.5x16 #1a1614. */
+.nameEditing { display: inline-flex; align-items: center; gap: 1px; }
+.nameInput {
+  border: 0; outline: 0; padding: 0; background: transparent;
+  color: var(--ink-700);
+  font: 500 14px/20px var(--font-sans);
+  width: 140px;
+}
+.caret { width: 1.5px; height: 16px; background: var(--ink-900); }
+
+/* 88:8 Card: 240 wide, r24, shadow-card, no stroke, VERTICAL gap 16, pad 20. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  color: var(--ink-900);
+  text-decoration: none;
+  width: 100%;
+}
+.tint_pink   { background: var(--accent-pink); }        /* 88:8   #eba2d5 */
+.tint_green  { background: var(--accent-green); }       /* 88:24  #9eab6c */
+.tint_yellow { background: var(--accent-yellow); }      /* 88:40  #f0d977 */
+
+/* 88:9 Title row: gap 8, counter MIN. */
+.titleRow { display: flex; align-items: flex-start; gap: 8px; }
+/* Every title across the nineteen cards on 88:2 is 24 or 48 tall — one or two
+   lines. `summary` is a whole sentence, so it is clamped at the drawn maximum. */
+.cardTitle {
+  margin: 0; flex: 1 1 auto; min-width: 0; color: var(--ink-900);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.more {                                                  /* 88:11  sans semibold 16/24 */
+  flex: 0 0 auto; border: 0; padding: 0; background: transparent;
+  color: var(--ink-500); line-height: 24px;
+}
+
+/* 88:12 Progress: gap 4, five segments, each 4 tall and r2. */
+/* Stands in for the track on a ticket with no conflicts to count. Same box as
+   the bar it replaces (4px rule + its gap) so the card does not change height. */
+/* Only for the brief moment before the tally lands. A card with no
+   conflicts renders nothing at all here — the footer closes the gap — because
+   a reserved 4px of blank is a row that says nothing. */
+.noConflicts { margin: 0; height: 4px; line-height: 4px; color: var(--ink-500); }
+
+.progress { display: flex; gap: 4px; }
+.seg { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--surface-card); }  /* 88:17 #ffffff */
+.segOn { background: var(--ink-900); }                   /* 88:13 #1a1614 */
+
+/* 88:18 Footer: gap 12, counter CENTER. */
+.footer { display: flex; align-items: center; gap: 12px; }
+.avatar {                                                /* 88:19  36x36 r18 #faf4e7 */
+  flex: 0 0 auto;
+  width: 36px; height: 36px;
+  border-radius: 18px;
+  background: var(--surface-app);
+  color: var(--ink-700);
+  display: grid; place-items: center;
+}
+.meta { flex: 1 1 auto; min-width: 0; }
+.metaName { margin: 0; color: var(--ink-900); }           /* 88:22 sans semibold 16/24 */
+.metaDate { margin: 0; color: var(--ink-500); }           /* 88:23 sans regular 14/20 */
+
+/* 231:1164 Placeholder — nothing filed: 96 tall, dashed #e4dece 1px [10,8],
+   r24, centred caption #7a7161 12/16. */
+/* CSS `dashed` cannot carry a 10/8 dash pattern, so the outline is an inline
+   SVG rect with strokeDasharray="10 8" — exactly the Figma dashPattern. */
+.placeholder {
+  position: relative;
+  height: 96px;
+  display: grid; place-items: center;
+  padding: 20px;
+  color: var(--ink-500);
+  text-align: center;
+}
+.placeholderEdge { position: absolute; left: 0; top: 0; color: var(--ink-line); }
+.placeholderCaption { position: relative; margin: 0; }
+
+.loading, .error { padding: 56px 0; color: var(--ink-500); }
+
+/* Not in the design: 86:2 has no search. The note sits between the controls and
+   the board, so it takes the board's 28px gap and gives back 14 of it. */
+.filterNote { margin: -14px 0 14px; color: var(--ink-500); }

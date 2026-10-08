@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Put the demo back to its starting state.
+#
+# Run this between rehearsals, or any time a click has moved the data: approving
+# Harbour Coffee Co's load-in, resolving a Dj Nova conflict, adding a run sheet
+# row. All of those are real writes, and nothing in the UI undoes them.
+#
+#   ./scripts/demo-reset
+#
+# It restores data/bumpin.db from data/demo_baseline.db through SQLite's own
+# backup API rather than copying the file over the top. A plain `cp` replaces the
+# inode, and a backend that already has the old file open keeps reading it; worse,
+# it can leave a half-written page if a request lands mid-copy. `.restore` takes
+# the write lock, so a request either waits or sees the finished state. The
+# backend does not need restarting — it opens a connection per request and closes
+# it again, so the next request reads the restored database.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+LIVE=data/bumpin.db
+BASE=data/demo_baseline.db
+
+[ -f "$BASE" ] || { echo "No baseline at $BASE. Run ./scripts/demo-snapshot first." >&2; exit 1; }
+
+sqlite3 "$LIVE" ".restore $BASE"
+
+# Proof rather than a cheerful message: the three numbers a rehearsal actually
+# moves. Anything else here means the baseline itself is wrong.
+sqlite3 "$LIVE" <<'SQL'
+.mode list
+.separator '  '
+SELECT 'open findings      ', COUNT(*) FROM findings WHERE status = 'open';
+SELECT 'drafts in outbox   ', COUNT(*) FROM outbox;
+SELECT 'tickets to review  ', COUNT(*) FROM tickets WHERE status = 'needs_review';
+SELECT 'Harbour load-in    ', load_in_start || ' to ' || load_in_end FROM vendors WHERE name = 'Harbour Coffee Co';
+SQL
+echo "Demo state restored."
