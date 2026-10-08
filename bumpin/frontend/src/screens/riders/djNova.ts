@@ -36,7 +36,9 @@ const COPY: Record<string, { message: string; suggestion?: string }> = {
      rather than of four: a difference the operator can actually act on. */
   '4x Pioneer CDJ-3000': {
     message: 'Rider asks for 4x Pioneer CDJ-3000, Dome Stage has 2.',
-    suggestion: 'Ask Mira Okafor to accept 2, or arrange an external rental for the other 2.',
+    suggestion: 'Dome Stage owns 2 of the 4 CDJ-3000s this set asks for, and the other '
+      + 'stages are using theirs at the same time. Ask Mira Okafor whether a two-deck '
+      + 'booth works, and if not, get the remaining 2 on hire before the run sheet locks.',
   },
   /* Low capacity, not a shortage: the stage can cover it, but only exactly. */
   '2 x professional booth monitor speaker': {

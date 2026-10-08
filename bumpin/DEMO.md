@@ -8,6 +8,7 @@ Two processes, two terminals. Both have to be running.
 
 ```bash
 # terminal 1 — backend on :8000
+.venv/bin/pip install -r requirements.txt     # first run, and after any git pull
 .venv/bin/uvicorn backend.app.main:app --port 8000 --reload
 
 # terminal 2 — frontend on :5173

@@ -81,6 +81,39 @@ export function hhmm(iso: string | null | undefined): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+/** What a card is filed under, rather than what it says.
+ *
+ *  A board is read by scanning it, and a card headed "Rider asks for 3x Pioneer
+ *  CDJ-3000, River Stage has 2" makes you read a sentence to learn one thing:
+ *  something is short. The sentence is still on the ticket, and the highlight on
+ *  the document is where the specifics belong. The card carries the category. */
+const UMBRELLA: Record<string, string> = {
+  shortage: 'Equipment shortage',
+  double_booking: 'Equipment clash',
+  over_budget: 'Over hospitality budget',
+  low_capacity: 'Capacity is tight',
+  low_confidence: 'Needs a read',
+  schedule_change: 'Schedule change',
+  missing_doc: 'Missing document',
+  expired_cert: 'Expired certificate',
+  parsed_field: 'Parsed cleanly',
+}
+
+const RANK: Record<Severity, number> = { conflict: 2, warning: 1, info: 0 }
+
+/** The worst thing on the ticket, named. Settled findings are ignored while
+ *  anything is still open, so a card stops reading "Equipment shortage" once
+ *  the shortage is dealt with and starts reading whatever is left. */
+export function umbrellaTitle(
+  findings: Pick<Finding, 'kind' | 'severity' | 'status'>[],
+): string {
+  const live = findings.filter((f) => f.status === 'open')
+  const pool = live.length > 0 ? live : findings
+  if (pool.length === 0) return 'Nothing outstanding'
+  const worst = pool.reduce((a, b) => (RANK[b.severity] > RANK[a.severity] ? b : a))
+  return UMBRELLA[worst.kind] ?? kindLabel(worst.kind)
+}
+
 /** `double_booking` -> "Double booking". The Figma tags read "Low capacity",
  *  "Clash" and "Change"; those are specimen copy for findings the backend does
  *  not hold, so the tag carries the real `finding.kind` instead. */

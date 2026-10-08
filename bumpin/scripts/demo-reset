@@ -24,6 +24,13 @@ BASE=data/demo_baseline.db
 
 sqlite3 "$LIVE" ".restore $BASE"
 
+# The baseline is a snapshot, so it is frozen at the schema of the day it was
+# taken. Anyone adding a table after that — `memory` arrived this way — would
+# find a reset silently deleting it again. schema.sql is every CREATE guarded
+# with IF NOT EXISTS, so replaying it puts back whatever the snapshot predates
+# and leaves everything in it untouched.
+sqlite3 "$LIVE" < backend/app/schema.sql
+
 # Proof rather than a cheerful message: the three numbers a rehearsal actually
 # moves. Anything else here means the baseline itself is wrong.
 sqlite3 "$LIVE" <<'SQL'

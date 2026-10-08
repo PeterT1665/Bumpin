@@ -280,14 +280,21 @@ function makeCard(
   }
 }
 
-/* The separator is a comma, not an em dash: the fourth branch already reads
-   "Food safety cert, current to 2027", and a card title is a phrase rather than
-   two halves of a headline. */
+/** The state the card is in, not the document it is about.
+ *
+ *  It used to lead with the noun — "Food safety cert, expires 5 Dec" — which
+ *  repeated the column header above it and spent the widest text on the board
+ *  saying something the operator had already read. The column says which
+ *  document; the card says what is wrong with it. `noun` is still taken because
+ *  an unfiled card has no document to name and the sentence needs a subject.
+ *
+ *  `tone === 'conflict'` keeps the date: an expiry inside the festival is the
+ *  one case where WHEN is the whole finding. */
 function cardTitle(noun: string, doc: VendorDocument | null, tone: Tone) {
-  if (!doc) return `${noun}, not on file`
-  if (!doc.expiry_date) return `${noun}, expiry unreadable`
-  if (tone === 'conflict') return `${noun}, expires ${dayMonth(doc.expiry_date)}`
-  return `${noun}, current to ${doc.expiry_date.slice(0, 4)}`
+  if (!doc) return `${noun} missing`
+  if (!doc.expiry_date) return 'Expiry unreadable'
+  if (tone === 'conflict') return `Expires ${dayMonth(doc.expiry_date)}`
+  return `Current to ${doc.expiry_date.slice(0, 4)}`
 }
 
 /** Newest document of a kind, matching `eligibility.latest_docs` which keeps

@@ -6,7 +6,7 @@ import { matches, useSearch } from '@/components/search'
 import { api } from '@/api/client'
 import type { Artist } from '@/api/types'
 import {
-  conflictsOf, initials, shortDate, tintFor,
+  conflictsOf, initials, shortDate, tintFor, umbrellaTitle,
   type ConflictTally, type RiderTicket,
 } from './riders'
 import s from './RiderNeeds.module.css'
@@ -67,21 +67,24 @@ function cardTitle(ticket: RiderTicket): string {
  *  black once that conflict has been dealt with. A ticket with no conflicts has
  *  no denominator, so it gets no track at all rather than an empty one — an
  *  empty track reads as "none done", which is a different thing. */
-function TicketCard({ ticket, stageless, conflicts }: {
+function TicketCard({ ticket, stageless, conflicts, title }: {
   ticket: RiderTicket
   stageless: boolean
   /** `null` until the ticket's findings have loaded, or if that fetch failed. */
   conflicts: ConflictTally | null
+  /** The umbrella, once the findings are in. Until then the summary stands in,
+   *  so the card has a heading on first paint rather than a blank line. */
+  title: string | undefined
 }) {
   const name = ticket.owner?.name ?? ''
   const tint = tintFor(conflicts ?? { raised: 0, resolved: 0 })
-  const title = cardTitle(ticket)
+  const heading = title ?? cardTitle(ticket)
 
   return (
     <Link to={`/tickets/${ticket.id}`} className={`${s.card} ${s[`tint_${tint}`]}`}
-          aria-label={`${name || 'Ticket'} · ${title}`}>
+          aria-label={`${name || 'Ticket'} · ${heading}`}>
       <div className={s.titleRow}>
-        <h3 className={`${s.cardTitle} t-heading-sm`}>{title}</h3>
+        <h3 className={`${s.cardTitle} t-heading-sm`}>{heading}</h3>
         <span className={`${s.more} t-body-md-b`} aria-hidden>&#8226;&#8226;&#8226;</span>
       </div>
       {conflicts === null ? (
@@ -115,6 +118,10 @@ export function RiderNeeds() {
   const [error, setError] = useState<string | null>(null)
   /** Conflicts raised and cleared per ticket, for the card bars. */
   const [conflicts, setConflicts] = useState<ReadonlyMap<number, ConflictTally | null>>(new Map())
+  /** The umbrella each card is headed with, from the same detail pass as the
+   *  tallies. A ticket not yet in here falls back to its summary, which is what
+   *  the card used to show outright. */
+  const [titles, setTitles] = useState<ReadonlyMap<number, string>>(new Map())
   /** Columns the operator added locally. The backend has no stage-create
    *  endpoint, so an added column lives in this screen only. */
   const [extraColumns, setExtraColumns] = useState<string[]>([])
@@ -145,10 +152,13 @@ export function RiderNeeds() {
          paints immediately and the bars fill when they arrive. A detail that
          fails leaves that one card unknown rather than failing the board. */
       const pairs = await Promise.all(t.map(async (row) => {
-        try { return [row.id, conflictsOf((await api.ticket(row.id)).findings)] as const }
-        catch { return [row.id, null] as const }
+        try {
+          const { findings } = await api.ticket(row.id)
+          return [row.id, conflictsOf(findings), umbrellaTitle(findings)] as const
+        } catch { return [row.id, null, null] as const }
       }))
-      setConflicts(new Map(pairs))
+      setConflicts(new Map(pairs.map(([id, tally]) => [id, tally])))
+      setTitles(new Map(pairs.filter((p) => p[2] !== null).map(([id, , t2]) => [id, t2 as string])))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load rider needs')
     }
@@ -172,11 +182,14 @@ export function RiderNeeds() {
     return m
   }, [artists])
 
-  /** The cards the top-bar query leaves standing. Owner name and card title are
-   *  both read, so either half of what a card draws finds it. */
+  /** The cards the top-bar query leaves standing. The umbrella the card draws,
+   *  the owner, AND the summary underneath it are all read: the card no longer
+   *  shows the sentence, but searching "Pioneer" should still find the ticket
+   *  that is short of them. */
   const shown = useMemo(
-    () => (tickets ?? []).filter((t) => matches(q, t.owner?.name, cardTitle(t))),
-    [tickets, q],
+    () => (tickets ?? []).filter(
+      (t) => matches(q, t.owner?.name, titles.get(t.id), cardTitle(t))),
+    [tickets, q, titles],
   )
 
   const columns = useMemo<Column[]>(() => {
@@ -274,7 +287,8 @@ export function RiderNeeds() {
                 ? <Placeholder caption={filtering ? 'No matches here' : 'Nothing filed'} />
                 : col.tickets.map((t) => (
                     <TicketCard key={t.id} ticket={t} stageless={col.key === '__unstaged'}
-                                conflicts={conflicts.get(t.id) ?? null} />
+                                conflicts={conflicts.get(t.id) ?? null}
+                                title={titles.get(t.id)} />
                   ))}
             </section>
           ))}
