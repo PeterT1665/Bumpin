@@ -11,7 +11,7 @@ export function AppShell() {
   const { badges, toast, dismiss } = useArrivals()
   return (
     <div className={styles.backdrop}>
-      {toast && <ArrivalToast ticket={toast} onClose={dismiss} />}
+      {toast && <ArrivalToast email={toast} onClose={dismiss} />}
       <div className={styles.window}>
         <NavRail badges={badges} />
         <main className={styles.canvas}>

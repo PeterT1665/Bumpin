@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, ApiError } from '@/api/client'
 import type { Finding, Notification, OutboxRow, PhoneCard, TicketDetail } from '@/api/types'
+import { labelOf } from '@/components/Arrivals'
 import s from './phone.module.css'
 
 /* Ravi's phone. He is never at a desk during the festival, so this is the whole
@@ -59,22 +60,27 @@ export function Phone() {
   // feed, so the emails it drafted can still be read and sent from here.
   const [held, setHeld] = useState<PhoneCard | null>(null)
   const [fresh, setFresh] = useState<Set<string>>(new Set())
-  const [banner, setBanner] = useState<PhoneCard | null>(null)
+  const [banner, setBanner] = useState<{ card: PhoneCard; tag: string } | null>(null)
   const [showNotes, setShowNotes] = useState(false)
-  const known = useRef<Set<string> | null>(null)
+  const lastEmail = useRef<number | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const [c, n] = await Promise.all([api.phoneCards(), api.notifications(true)])
-      if (known.current) {
-        const added = c.filter((x) => !known.current!.has(x.id))
-        if (added.length) {
-          setFresh((prev) => new Set([...prev, ...added.map((a) => a.id)]))
-          setBanner(added[0])
+      const [c, n, mail] = await Promise.all([api.phoneCards(), api.notifications(true), api.recentEmails()])
+      /* Announced per incoming email, not per new card, so a revised rider that
+         lands on a card already in the list is still flagged. */
+      const newest = mail.reduce((m, r) => Math.max(m, r.email_id), 0)
+      if (lastEmail.current !== null && newest > lastEmail.current) {
+        const added = mail.filter((r) => r.email_id > lastEmail.current!)
+        const ids = added.map((r) => `t${r.ticket_id}`)
+        setFresh((prev) => new Set([...prev, ...ids]))
+        const latest = c.find((x) => x.id === ids[0])
+        if (latest) {
+          setBanner({ card: latest, tag: labelOf(added[0]) })
           navigator.vibrate?.(200)
         }
       }
-      known.current = new Set(c.map((x) => x.id))
+      lastEmail.current = newest
       setCards(c)
       setNotes(n)
       setOffline(false)
@@ -145,9 +151,9 @@ export function Phone() {
         )}
 
         {banner && (
-          <button type="button" className={s.banner} onClick={() => open(banner)}>
-            <span className={`${s.bannerTag} t-overline`}>New</span>
-            <span className="t-label-md">{banner.title}</span>
+          <button type="button" className={s.banner} onClick={() => open(banner.card)}>
+            <span className={`${s.bannerTag} t-overline`}>{banner.tag}</span>
+            <span className="t-label-md">{banner.card.title}</span>
           </button>
         )}
 

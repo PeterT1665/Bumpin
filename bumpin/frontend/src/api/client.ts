@@ -1,7 +1,7 @@
 import type {
   Artist, Highlight, InboundEmail, InboxResult, InventoryItem, NewInventoryItem,
   NewSet, Notification, OutboxRow, Overview, PhoneCard, RunsheetRow, Stage,
-  TicketDetail, TicketSummary, UploadResult, MemoryItem, Vendor,
+  TicketDetail, TicketSummary, UploadResult, MemoryItem, RecentEmail, Vendor,
 } from './types'
 
 /** Single-operator build: Ravi is always the actor. The backend requires the
@@ -146,6 +146,7 @@ export const api = {
     return res.json() as Promise<UploadResult[]>
   },
   memory: () => get<MemoryItem[]>('/memory'),
+  recentEmails: () => get<RecentEmail[]>('/inbox/recent'),
 }
 
 /** Served as bytes, not JSON — use these directly as src/href. */

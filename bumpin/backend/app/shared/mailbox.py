@@ -162,6 +162,28 @@ def start() -> None:
     threading.Thread(target=_loop, name="mailbox", daemon=True).start()
 
 
+@router.get("/inbox/recent")
+def recent_emails(limit: int = 10) -> list[dict]:
+    """Newest incoming emails and the ticket each one opened or updated, for the
+    "new email" toast on the laptop and the banner on the phone."""
+    with db.get_conn() as conn:
+        rows = db.rows(conn.execute(
+            """SELECT e.id AS email_id, e.from_addr, e.subject, e.received_at,
+                      t.id AS ticket_id, t.type AS ticket_type, t.owner_type, t.owner_id, t.summary,
+                      t.created_at AS ticket_created_at,
+                      COALESCE(a.name, v.name) AS owner_name,
+                      (SELECT MIN(e2.id) FROM emails e2 WHERE e2.ticket_id = t.id) < e.id AS updated_existing
+               FROM emails e
+               LEFT JOIN tickets t ON t.id = e.ticket_id
+               LEFT JOIN artists a ON t.owner_type = 'artist' AND a.id = t.owner_id
+               LEFT JOIN vendors v ON t.owner_type = 'vendor' AND v.id = t.owner_id
+               WHERE e.direction = 'in' AND e.ticket_id IS NOT NULL
+               ORDER BY e.id DESC LIMIT ?""", (max(1, min(limit, 50)),)))
+    for r in rows:
+        r["updated_existing"] = bool(r["updated_existing"])
+    return rows
+
+
 @router.get("/inbox/mailbox")
 def mailbox_status() -> dict:
     return status

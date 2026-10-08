@@ -292,3 +292,19 @@ export interface UploadResult {
 export interface MemoryItem {
   id: number; filename: string; kind: UploadKind; summary: string; uploaded_at: string; chars: number
 }
+
+/** GET /inbox/recent: newest incoming emails and the ticket each opened or updated. */
+export interface RecentEmail {
+  email_id: number
+  from_addr: string
+  subject: string
+  received_at: string
+  ticket_id: number
+  ticket_type: TicketType
+  owner_type: OwnerType | null
+  owner_id: number | null
+  owner_name: string | null
+  summary: string
+  /** True when the email landed on a ticket that already existed (a revised rider). */
+  updated_existing: boolean
+}
