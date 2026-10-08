@@ -22,7 +22,7 @@ load_dotenv()
 T = TypeVar("T", bound=BaseModel)
 
 _CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "llm_cache"
-_PROVIDER = os.getenv("LLM_PROVIDER", "fake")
+_PROVIDER = os.getenv("LLM_PROVIDER") or "fake"  # blank in .env means no AI
 _API_KEY = os.getenv("LLM_API_KEY", "")
 _CACHE_ON = os.getenv("LLM_CACHE", "off").lower() == "on"
 
@@ -72,7 +72,7 @@ def _groq_complete(prompt: str, schema: type[T]) -> str:
 
     client = openai.OpenAI(api_key=_API_KEY, base_url="https://api.groq.com/openai/v1")
     response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "openai/gpt-oss-120b"),
+        model=(os.getenv("LLM_MODEL") or "openai/gpt-oss-120b"),
         messages=[{"role": "user", "content": prompt + "\n\nRespond with JSON only."}],
         response_format={"type": "json_object"},
         temperature=0.2,
@@ -85,7 +85,7 @@ def _anthropic_complete(prompt: str, schema: type[T]) -> str:
 
     client = anthropic.Anthropic(api_key=_API_KEY)
     response = client.messages.create(
-        model=os.getenv("LLM_MODEL", "claude-sonnet-5-5"),
+        model=(os.getenv("LLM_MODEL") or "claude-sonnet-5-5"),
         max_tokens=4096,
         system="Respond with a single valid JSON object only. No prose, no markdown, no code fences.",
         messages=[{"role": "user", "content": prompt}],

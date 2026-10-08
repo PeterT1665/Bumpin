@@ -1,6 +1,6 @@
-# BumpIn
+# BumpIn: developer notes
 
-AI-powered vendor and rider CRM for Fieldday Events' Riverside festival. See `CLAUDE.md` and `docs/CONTRACT.md`.
+**Trying the product?** Start with the [README at the repository root](../README.md). This page is for working on the code. See also `CLAUDE.md` and `docs/CONTRACT.md`.
 
 **Demoing it?** Read [`DEMO.md`](DEMO.md) first — how to start both halves, what the walk-through is, which buttons write for real, and `./scripts/demo-reset` to put the data back between run-throughs.
 
@@ -11,12 +11,12 @@ Needs Python 3.11 or newer. From this `bumpin/` folder:
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env            # leave LLM_PROVIDER blank to use the fake provider
+cp .env.example .env            # leave LLM_PROVIDER blank to run without AI
 .venv/bin/uvicorn backend.app.main:app --reload
 ```
 
 - Health check: `GET http://localhost:8000/api/health`
-- Reset demo data: `POST http://localhost:8000/api/demo/reset`
+- Reset demo data: `POST http://localhost:8000/api/demo/reset` (restores `data/demo_baseline.db`, like `./scripts/demo-reset`)
 - API docs: `http://localhost:8000/docs`
 - Tests: `.venv/bin/python -m pytest -q`
 

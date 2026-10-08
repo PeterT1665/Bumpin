@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from datetime import date, datetime
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
@@ -26,8 +27,23 @@ if demo.after_reset not in db.POST_RESET_HOOKS:
 
 @router.post("/demo/reset")
 def demo_reset(user: str = Depends(current_user)) -> dict:
+    """Put the demo back to its starting state.
+
+    On the live database this restores data/demo_baseline.db, the same thing
+    ./scripts/demo-reset does, so it works without bash or the sqlite3 tool.
+    Anywhere else (tests, a fresh database elsewhere) it rebuilds from data/seed."""
+    baseline = db.DATA_DIR / "demo_baseline.db"
+    if baseline.exists() and db.DB_PATH.resolve() == (db.DATA_DIR / "bumpin.db").resolve():
+        src = sqlite3.connect(baseline)
+        with db.get_conn() as dst:
+            src.backup(dst)
+        src.close()
+        with db.get_conn() as conn:
+            counts = {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                      for t in ("artists", "vendors", "tickets", "findings", "inventory_items")}
+        return {"ok": True, "source": "demo_baseline.db", "counts": counts, "by": user}
     counts = db.reset()
-    return {"ok": True, "sim_today": db.SIM_TODAY, "counts": counts, "by": user}
+    return {"ok": True, "source": "seed", "sim_today": db.SIM_TODAY, "counts": counts, "by": user}
 
 
 @router.get("/overview")
