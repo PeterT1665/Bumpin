@@ -1,0 +1,13 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+bumpin/frontend/dist
+bumpin/data/bumpin.db
+bumpin/data/uploads
+bumpin/data/inbox
+bumpin/data/preview
+bumpin/data/llm_cache
+**/.env
+.git
+**/.DS_Store

@@ -1,0 +1,15 @@
+# Render Blueprint: New > Blueprint, pick this repo. Free plan, Docker runtime.
+services:
+  - type: web
+    name: bumpin-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: BUMPIN_PUBLIC_DEMO
+        value: "1"
+      - key: EMAIL_MODE
+        value: mock
+      - key: DEMO_RESET_MINUTES
+        value: "30"
